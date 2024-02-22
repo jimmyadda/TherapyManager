@@ -1,6 +1,6 @@
 **/env/
 **/__pycache__/
-TherapyManager.db
+*.db
 
 config.json
 LogFile.log
