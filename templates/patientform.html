@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <!-- =============== VENDOR STYLES ===============-->
+   <!-- FONT AWESOME-->
+   <link rel="stylesheet" href="static/vendor/fontawesome/css/font-awesome.min.css">
+   <!-- SIMPLE LINE ICONS-->
+   <link rel="stylesheet" href="static/vendor/simple-line-icons/css/simple-line-icons.css">
+   <!-- ANIMATE.CSS-->
+   <link rel="stylesheet" href="static/vendor/animate.css/animate.min.css">
+   <!-- WHIRL (spinners)-->
+   <link rel="stylesheet" href="static/vendor/whirl/dist/whirl.css">
+    <link rel="stylesheet" href="static/vendor/sweetalert/dist/sweetalert.css">
+     <!-- DATATABLES-->
+   <link rel="stylesheet" href="static/vendor/datatables-colvis/css/dataTables.colVis.css">
+   <link rel="stylesheet" href="static/vendor/datatables/media/css/dataTables.bootstrap.css">
+   <link rel="stylesheet" href="static/vendor/dataTables.fontAwesome/index.css">
+   <!-- =============== PAGE VENDOR STYLES ===============-->
+   <!-- =============== BOOTSTRAP STYLES ===============-->
+   <link rel="stylesheet" href="static/app/css/bootstrap.css" id="bscss">
+   <!-- =============== APP STYLES ===============-->
+   <link rel="stylesheet" href="static/app/css/app.css" id="maincss">
+   <link rel="stylesheet" type="text/css" href="/static/main.css" media="screen"/>
+
+    <title>Patient Details</title>
+
+    <style>
+        .form-group {
+            padding-bottom: 30px;
+        }
+        .content-heading{
+            font-size: larger;
+            padding: 10px 15px 30px;
+            line-height: 21px;
+            text-decoration: underline;
+        }
+
+        tr{display:table-row;}
+        td{display:table-cell;}
+
+        .form-control{margin-right: 30px;}
+    </style>
+
+
+
+</head>
+{%if message != ""%}
+ <body onload="showmsg('{{message}}');">
+{% else %}
+ <body>
+{% endif %}
+    <nav role="navigation" class="navbar topnavbar">
+        <!-- START navbar header-->
+        <div class="navbar-header">
+           <a href="/" class="navbar-brand">
+              <div class="brand-logo">
+                 Therapy Manager
+              </div>
+              <div class="brand-logo-collapsed">
+                 <img src="img/logo-single.png" alt="App Logo" class="img-responsive">
+              </div>
+           </a>
+        </div>
+        <!-- END navbar header-->
+        <!-- START Nav wrapper-->
+        <div class="nav-wrapper">
+
+        </div>
+        <!-- END Nav wrapper-->
+        <!-- START Search form-->
+        <form role="search" action="search.html" class="navbar-form">
+           <div class="form-group has-feedback">
+              <input type="text" placeholder="Type and hit enter ..." class="form-control">
+              <div data-search-dismiss="" class="fa fa-times form-control-feedback"></div>
+           </div>
+           <button type="submit" class="hidden btn btn-default">Submit</button>
+        </form>
+        <!-- END Search form-->
+     </nav>
+     <!-- END Top Navbar-->
+
+     <div class="content-heading">
+        <!-- START Language list-->
+
+        <!-- END Language list    -->
+        Patient Details
+        <small data-localize="dashboard.WELCOME"></small>
+         <div class="pull-right">
+           <div class="btn-group">
+        
+           </div>
+        </div>
+     </div>
+
+    <div class="main">
+
+    <table> 
+
+        <form method="POST" id="patientDetail" enctype="multipart/form-data" action="/patientform">
+            <tr>
+                <td>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">Id</label>
+                        <div class="col-lg-10">
+                        <input type="text"  class="form-control" value="" name="pat_id">
+                        </div>
+                    </div>
+            </td>
+        </tr>
+            <tr>
+                <td>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">First Name</label>
+                        <div class="col-lg-10">
+                        <input type="text"  class="form-control" value="" name="pat_first_name">
+                        </div>
+                    </div>
+                </td>
+
+                <td>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">Last name</label>
+                        <div class="col-lg-10">
+                            <input required type="text" name="pat_last_name" class="form-control" placeholder="Last name">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">Insurance No</label>
+                        <div class="col-lg-10">
+                            <input required type="text" name="pat_insurance_no"  class="form-control" placeholder="Insurance No">
+                        </div>
+                    </div>
+                </td>
+                <td>
+                   
+                </td>
+            </tr>
+   <tr>
+        <td>
+            <div class="form-group">
+                <label class="col-lg-2 control-label">Phone Number</label>
+                <div class="col-lg-10">
+                <input required name="pat_ph_no" type="text" class="form-control" placeholder="Phone Number">
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="form-group">
+                <label class="col-lg-2 control-label">Email</label>
+                <div class="col-lg-10">
+                   <input required type="text" name="pat_email" class="form-control" placeholder="Email">
+                </div>
+             </div>
+        </td>
+   </tr>
+
+   <tr>
+    <td>
+     <div class="form-group">
+                <label class="col-lg-2 control-label">Address</label>
+                <div class="col-lg-10">
+                   <textarea required name="pat_address" class="form-control" placeholder="Address"></textarea>
+                </div>
+             </div>
+            </td>
+
+            <td>
+
+            </td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="button" name="submit-save" class="blue icon-save" onclick="updatePatientdet();" value="Save update">
+                </td>                
+            </tr>
+            
+        </form>
+    </table> 
+
+    </div>
+
+    <script>
+            $( document ).ready(function() {
+                let test = sessionStorage.getItem("pat_det");
+
+                let json_data = JSON.stringify(test);
+                var data = JSON.parse(json_data); 
+                const newdata = JSON.parse(data); 
+                    //display data
+                    //populate('#patientDetail', $.parseJSON(json_data));
+                    const { elements } = document.querySelector('#patientDetail')
+
+                    for (const [ key, value ] of Object.entries(newdata) ) {
+                    const field = elements.namedItem(key)
+                    field && (field.value = value)
+                    }
+
+            });
+
+
+            function populate(frm, data) {
+            $.each(data, function(key, value){
+                $('[name='+key+']', frm).val(value);
+            });
+            }
+
+
+ 
+     function updatePatientdet() {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const id = urlParams.get('id')
+
+        var data = JSON.stringify($('form').serializeJSON());
+        console.log(data);
+        
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "url": "patientapi/" + id,
+            "method": "PUT",
+            "headers": {
+                "content-type": "application/json",
+                "cache-control": "no-cache"
+            },
+            "processData": false,
+            "data": data
+        }
+
+        $.ajax(settings).done(function (response) {
+            $('.modal.in').modal('hide')
+            $.notify("Patient Updated Successfully", {"status":"success"});
+            getPatient()
+        });
+        
+
+
+    }
+
+
+
+    </script>
+</body>
+   <!-- =============== VENDOR SCRIPTS ===============-->
+   <!-- MODERNIZR-->
+   <script src="static/vendor/modernizr/modernizr.custom.js"></script>
+   <!-- JQUERY-->
+   <script src="static/vendor/jquery/dist/jquery.js"></script>
+   <!-- BOOTSTRAP-->
+   <script src="static/vendor/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="static/vendor/datatables/media/js/jquery.dataTables.min.js"></script>
+   <script src="static/vendor/datatables-colvis/js/dataTables.colVis.js"></script>
+   <script src="static/vendor/datatables/media/js/dataTables.bootstrap.js"></script>
+   <script src="static/vendor/serialize/jquery.serializejson.js"></script>
+   <!-- STORAGE API-->
+   <script src="static/vendor/jQuery-Storage-API/jquery.storageapi.js"></script>
+   <!-- JQUERY EASING-->
+   <script src="static/vendor/jquery.easing/js/jquery.easing.js"></script>
+   <!-- ANIMO-->
+   <script src="static/vendor/animo.js/animo.js"></script>
+    <script src="static/vendor/parsley/parsley.min.js"></script>
+       <script src="static/vendor/sweetalert/dist/sweetalert.min.js"></script>
+   <!-- LOCALIZE-->
+   <script src="static/vendor/jquery-localize-i18n/dist/jquery.localize.js"></script>
+   <!-- =============== PAGE VENDOR SCRIPTS ===============-->
+   <!-- =============== APP SCRIPTS ===============-->
+   <script src="static/app/js/app.js"></script>
+<!-- <script src="static/js/patient.js"></script> -->
+
+</html>
