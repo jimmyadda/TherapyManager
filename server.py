@@ -146,7 +146,7 @@ def registration_request():
             user = load_user(form['userid'])
             logger.info("New User Created: "+ user.name)           
             flask_login.login_user(user)            
-            return redirect('/index') 
+            return redirect('/') 
         else:
             return redirect(f"/error") 
     else:
@@ -171,7 +171,7 @@ def login_request():
             user = load_user(form['userid'])
             logger.info(f"Login successfull - '{form['userid']}'  date: {str(datetime.now())}")
             flask_login.login_user(user)
-            return redirect('/index')
+            return redirect('/')
         else: #password incorrect
            logger.info(f"Login Failed - '{form['userid']}'  date: {str(datetime.now())}")
            return render_template('/login.html',alert = "Invalid user/password. please try again.") 
@@ -447,9 +447,6 @@ def send_appointment(notification=''):
         server.close()
     print('Email sent!')
     return redirect(f"/appointment")
-    #Log
-    #logger.info(f"New Mail - '{form['id']}' has been Sent by: {user['userid']} date: {str(datetime.now())}")
-    #return redirect(f"/main?folderid={form['folderid']}&id={form['id']}")
 
 @app.route("/new-note", methods=["POST"])
 @flask_login.login_required
@@ -506,6 +503,35 @@ def appointment_Page():
     id = request.args.get('id')
     user = flask_login.current_user.get_dict()
     return render_template('appointment.html',user=user)
+
+@app.route("/patientform", methods=['GET'])
+def patient_folder_Load():
+    id = request.args.get('id')
+    user = flask_login.current_user.get_dict()    
+    patientdata = database_read(f"select * from patient where pat_id= '{id}';")
+    return render_template('patientform.html',patient=patientdata, alert="")
+
+
+
+
+@app.route("/patientform", methods=["POST"])
+@flask_login.login_required
+def update_patien():
+    user = flask_login.current_user.get_dict()
+    form = dict(request.values)
+    id = form['pat_id']
+    print(form)
+    sql = "UPDATE patient SET pat_first_name =:pat_first_name, pat_last_name =:pat_last_name, pat_ph_no =:pat_ph_no, pat_address=:pat_address, pat_email =:pat_email, pat_insurance_no =:pat_insurance_no where pat_id =:pat_id"
+    ok = database_write(sql,form)
+    ok=1    
+    if ok == 1:
+        patientdata = database_read(f"select * from patient where pat_id= '{id}';")
+        message = 'Success'
+        return render_template('patientform.html',patient=patientdata,message=message)
+        #return redirect(f'/patientform?id={id}')
+    else:
+       return "ERROR"
+    
 
 @app.route("/error")
 def error_page():

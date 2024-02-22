@@ -53,6 +53,8 @@ class Patient(Resource):
         """api to update the patient by it id"""
 
         patientInput = request.get_json(force=True)
+        print(patientInput)
+
         pat_first_name = patientInput['pat_first_name']
         pat_last_name = patientInput['pat_last_name']
         pat_insurance_no = patientInput['pat_insurance_no']

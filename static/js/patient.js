@@ -131,12 +131,18 @@ swal({
                     },
                     {
                         mRender: function (o) {
-                            return '<button class="btn-xs btn btn-info btn-edit" type="button">Edit</button>';
+                            return '<button id="patedit" class="btn-xs btn btn-info btn-edit" type="button">Edit</button>';
                         }
                     },
                     {
                         mRender: function (o) {
-                            return '<button class="btn-xs btn btn-danger delete-btn" type="button">Delete</button>';
+                            
+                            return '<button id="patrecords" class="btn-xs btn btn-success edit-btn" type="button">Medical Records</button>';
+                        }
+                    },
+                    {
+                        mRender: function (o) {
+                            return '<button  class="btn-xs btn btn-danger delete-btn" type="button">Delete</button>';
                         }
                     }
         ]
@@ -147,28 +153,40 @@ swal({
                 deletePatient(data.pat_id)
 
             });
-            $('.btn-edit').one("click", function(e) {
+
+
+            //Edit patient modal
+            $("#patedit").click(function () {
                 var data = table.row($(this).parents('tr')).data();
                 $('#myModal').modal().one('shown.bs.modal', function (e) {
+                    //display data
                     for (var key in data) {
                         $("[name=" + key + "]").val(data[key])
                     }
+                    ///
                     $("#savethepatient").off("click").on("click", function(e) {
                     var instance = $('#detailform').parsley();
                     instance.validate()
-                    console.log(instance.isValid())
-                    if(instance.isValid()){
+                            if(instance.isValid()){
                         jsondata = $('#detailform').serializeJSON();
                         updatePatient(jsondata, data.pat_id)
                         }
-
+        
                     })
-                })
+        
+                })                    
+            })
 
 
+            $("#patrecords").click(function () {
+                var data = table.row($(this).parents('tr')).data();
+                let json_data = JSON.stringify(data)
+                console.log(json_data);
+                sessionStorage.setItem("pat_det", json_data);
+                window.open("/patientform?id="+data.pat_id);
 
-            });
-
+            })
+                 
         });
 
 
@@ -178,7 +196,7 @@ swal({
 
 
     $("#addpatient").click(function () {
-$('#detailform input,textarea').val("")
+        $('#detailform input,textarea').val("")
         $('#myModal').modal().one('shown.bs.modal', function (e) {
             $("#savethepatient").off("click").on("click", function(e) {
             var instance = $('#detailform').parsley();
