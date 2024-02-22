@@ -44,7 +44,6 @@ class Appointment(Resource):
 
     def delete(self,id):
         """Delete teh appointment by its id"""
-
         conn.execute("DELETE FROM appointment WHERE app_id=?",(id,))
         conn.commit()
         return {'msg': 'sucessfully deleted'}

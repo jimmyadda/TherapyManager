@@ -18,13 +18,23 @@ $(document).ready(function () {
             "processData": false,
             "data": JSON.stringify(data)
         }
-
         $.ajax(settings).done(function (response) {
          $.notify("Appointment Added Successfully", {"status":"success"});
-
             $('.modal.in').modal('hide')
             table.destroy();
-            $('#datatable4 tbody').empty(); // empty in case the columns change
+            $('#datatable4 tbody').empty(); // empty in case the columns change   
+
+            //send mail 
+            let f = new FormData();
+            f.append("id",data.pat_id)
+            f.append("doc_id",data.doc_id)
+            f.append("appointment_date",data.appointment_date)
+
+            fetch("/send-mail",{
+            "method": "POST",
+            "body":f,       
+            }).then(response => response.text()).then(data => {               
+            });
             getAppointment()
         });
 
@@ -34,7 +44,7 @@ $(document).ready(function () {
         var settings = {
             "async": true,
             "crossDomain": true,
-            "url": "appointment/" + id,
+            "url": "appointmentapi/" + id,
             "method": "DELETE",
             "headers": {
                 "cache-control": "no-cache",
@@ -112,9 +122,7 @@ swal({
             });
             $('#datatable4 tbody').on('click', '.delete-btn', function () {
                 var data = table.row($(this).parents('tr')).data();
-                console.log(data)
                 deleteAppointment(data.app_id)
-
             });
 
 
@@ -134,20 +142,21 @@ swal({
      $("#patient_select").html(patientSelect)
 
       $(".form_datetime").datetimepicker({
-         format: 'yyyy-mm-dd hh:ii:ss',
+         format: 'yyyy-mm-dd hh:ii:00',
          startDate:new Date(),
         initialDate: new Date()
     });
             $("#savethepatient").off("click").on("click", function(e) {
-
-
             var instance = $('#detailform').parsley();
             instance.validate()
-                    if(instance.isValid()){
+             if(instance.isValid()){
                 jsondata = $('#detailform').serializeJSON();
-                addAppointment(jsondata)
+                let pat_id = jsondata.pat_id;
+                addAppointment(jsondata);
+                //send mail to patient
+                  
                 }
-
+              
             })
 
         })
@@ -158,30 +167,32 @@ swal({
 
   // Handel date
 
-  var array = ["2024-02-14","2024-02-15","2024-02-16"]
+//   var array = ["2024-02-14","2024-02-15","2024-02-16"]
 
-  $('#datepicker1').datetimepicker({
-      beforeShowDay: function(date){
-          var string = jQuery.datepicker.formatDate('yy-mm-dd', date);
-          return [ array.indexOf(string) == -1 ]
-      }
-  });
+//   $('#datepicker1').datepicker({
+//       beforeShowDay: function(date){
+//           var string = jQuery.datepicker.formatDate('yy-mm-dd', date);
+//           return [ array.indexOf(string) == -1 ]
+//       }
+//   });
 
 
 
-    $("#datepicker1").datetimepicker().on("hide", function(e){   
-      var first = e.target.value;  
-      first = new Date(first);  
-      const yyyy = first.getFullYear();
-      let mm = first.getMonth() + 1; // Months start at 0!
-      let dd = first.getDate();   
-      let HH = first.getHours();  
-      if (dd < 10) dd = '0' + dd;
-      if (mm < 10) mm = '0' + mm;  
-      first = yyyy + '-' + mm + '-' + dd+ " " + HH+":00" ;  
-      var x = document.getElementById("datepicker1");      
-      x.value = first;
-    });
+    // $("#datepicker1").datetimepicker().on("hide", function(e){   
+    //   var first = e.target.value;  
+    //   first = new Date(first);  
+    //   const yyyy = first.getFullYear();
+    //   let mm = first.getMonth() + 1; // Months start at 0!
+    //   let dd = first.getDate();   
+    //   let HH = first.getHours();  
+    //   let min = first.getMinutes();  
+    //   let ss = first.getSeconds();
+    //   if (dd < 10) dd = '0' + dd;
+    //   if (mm < 10) mm = '0' + mm;  
+    //   first = yyyy + '-' + mm + '-' + dd+ " " + HH+":"+min+":00" ;  
+    //   var x = document.getElementById("datepicker1");      
+    //   x.value = first;
+    // });
 
 
 var doctorSelect=""

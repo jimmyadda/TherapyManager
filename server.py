@@ -79,7 +79,6 @@ def load_user(userid):
         user.id = userid
         return user
 
-
 def database_write(sql,data=None):
     connection = sqlite3.connect(database_filename)
     connection.row_factory = sqlite3.Row
@@ -116,8 +115,10 @@ def database_read(sql,data=None):
 def index_page():
     if flask_login.current_user.is_authenticated:
         logger.info(str(flask_login.current_user.get_dict()) + " Has Logged in")   
-        user = flask_login.current_user.get_dict()     
-        return render_template('/index.html',user=user)
+        user = flask_login.current_user.get_dict()
+        apps = Appointments()
+        appointments= apps.get()   
+        return render_template('/index.html',user=user,appointments=appointments)
     else:
         return redirect("/login")
 
@@ -145,7 +146,7 @@ def registration_request():
             user = load_user(form['userid'])
             logger.info("New User Created: "+ user.name)           
             flask_login.login_user(user)            
-            return redirect('/main') 
+            return redirect('/index') 
         else:
             return redirect(f"/error") 
     else:
@@ -185,6 +186,13 @@ def logout_page():
     flask_login.logout_user()
     return redirect("/")
 
+@app.route("/calendar")
+@flask_login.login_required
+def calendar_page():
+    user = flask_login.current_user.get_dict()
+    apps = Appointments()
+    appointments = apps.get() 
+    return render_template('calendar.html',user=user,appointments=appointments)
 
 @app.route("/main")
 @flask_login.login_required
@@ -196,8 +204,7 @@ def main_page():
     if 'id' in request.values:
         id = request.values['id']
 
-    user = flask_login.current_user.get_dict()
-    
+    user = flask_login.current_user.get_dict()    
     task_users = database_read(f"select name,email from accounts  order by name;")
     folders = database_read(f"select * from folders order by name;")
     tasks = database_read(f"select * from tasks where folderid= '{folderid}' AND status != 'CLOSE';")
@@ -206,8 +213,6 @@ def main_page():
     tasksfiles = database_read(f"select * from tasksfiles where id= '{id}';")
     TaskNotes = database_read(f"select * from TasksNotes where id= '{id}';")
     TaskCategories = database_read(f"select * from categories;")
-
-
     if len(maintask) == 1:
         maintask = maintask[0]
     else:
@@ -325,7 +330,6 @@ def upload():
             print('Allowed file types are txt, pdf, png, jpg, jpeg, gif')
             return redirect(request.url)
 
-
 @app.route("/upload", methods=['GET'])
 def upload_page():
     id = request.args.get('id')
@@ -336,7 +340,6 @@ def upload_page():
     else:
         maintask={}
     return render_template('upload.html',task=maintask)
-
 
 @app.route('/delete_file', methods=['POST'])
 @flask_login.login_required
@@ -391,45 +394,44 @@ def delete_folder():
     else:
         return "ERROR" 
     
-@app.route('/send-mail')
-def send_task(notification=''):
-    form = session['formData']
+@app.route('/send-mail', methods=['GET',"POST"])
+def send_appointment(notification=''):
     user = flask_login.current_user.get_dict() 
-    task_url = request.host_url + f"/main?folderid={form['folderid']}&id={form['id']}"
-    assignTo_mail = database_read(f"select email from accounts WHERE name ='{form['assignto']}' order by name;")
-    Project_data= database_read(f"select name from folders WHERE id ='{form['folderid']}' order by name;")
-    #Create Main
-    projname= Project_data[0]['name']
-    subject="Task Number : [#" +form['id']+" ] -" +form['title'] 
+    data = dict(request.values)
+    pat_data =  database_read(f"select * from patient where pat_id= '{data['id']}';")
+    doc_id = data['doc_id']
+    doc_data =  database_read(f"select * from doctor where doc_id= '{doc_id}';")
+    pat_email = pat_data[0]['pat_email']
+    doc_fullname = doc_data[0]['doc_first_name']+" " + doc_data[0]['doc_last_name'] 
+    pat_fullname = pat_data[0]['pat_first_name']+" "+pat_data[0]['pat_last_name']
+
+    #gmail_url = add Appointment to calendar
+    subject = "פגישת טיפול עם  : " + doc_fullname
     sender_email= str(mail_settings['MAIL_USERNAME'])
-    receiver_email = str(assignTo_mail[0]['email'])
+    receiver_email = pat_email
     #Build Msg
     # Email content
-
+    notification = 'נשמח לראותך '
     email_body = '''
-                <b>Subject:</b> {Subject}<br>
-                <b>Reported By:</b> {Reported By}<br>
-                <b>Assigned To:</b> {Assigned To}<br>
-                <b>Project:</b> {Project}<br>
-                <b>TaskID:</b> {TaskID}<br>
-                <b>Date Created:</b> {Date Created}<br>
+                <div id='App_mail' style="text-align: right;direction: rtl;" >
+                <b>נושא :</b> {Subject}<br>
+                <b>מטופל :</b> {Patient}<br>
+                <b>תאריך פגישה :</b> {Appointment Date}<br>
                 <br>
-                <b>Note:</b><br>
+                <b></b><br>
                 {note}
+                </div>
                 ''' 
             # Email data
     email_data = {
             'Subject': subject,    
-            'Reported By': user['userid'],
-            'Assigned To': form['assignto'],
-            'Project': projname,
-            'TaskID': form['id'],
-            'Date Created': form['created'],
+            'Patient': pat_fullname,
+            'Appointment Date': data['appointment_date'],
             'note': notification
             }          
 
     email_content = email_body.format(**email_data)
-    email_content += f"<br><p><a href={task_url}>Go to Task</a></p>"
+    #email_content += f"<br><p><a href={task_url}>Go to Task</a></p>"
     # Create MIME message
     message = MIMEMultipart()
     message['From'] = sender_email
@@ -444,9 +446,10 @@ def send_task(notification=''):
         server.sendmail(sender_email, receiver_email, message.as_string().encode("UTF-8"))
         server.close()
     print('Email sent!')
+    return redirect(f"/appointment")
     #Log
-    logger.info(f"New Mail - '{form['id']}' has been Sent by: {user['userid']} date: {str(datetime.now())}")
-    return redirect(f"/main?folderid={form['folderid']}&id={form['id']}")
+    #logger.info(f"New Mail - '{form['id']}' has been Sent by: {user['userid']} date: {str(datetime.now())}")
+    #return redirect(f"/main?folderid={form['folderid']}&id={form['id']}")
 
 @app.route("/new-note", methods=["POST"])
 @flask_login.login_required
@@ -470,7 +473,6 @@ def create_new_note():
             return redirect(f"/error?folderid={folderid}&id={id}") 
        
        return "ERROR"
-
 
 @app.route("/mytasks", methods=['GET'])
 def mytask_page():
@@ -503,11 +505,7 @@ def patient_Page():
 def appointment_Page():
     id = request.args.get('id')
     user = flask_login.current_user.get_dict()
-    mytasks = database_read(f"select ts.*,fol.name as foldername from tasks as ts left join folders as fol on ts.folderid = fol.id where assignto= '{user['name']}'")
-    closedtasks = database_read(f"select ts.*,fol.name as foldername from tasks as ts left join folders as fol on ts.folderid = fol.id where  status = 'CLOSE';")
-    print(closedtasks)
     return render_template('appointment.html',user=user)
-
 
 @app.route("/error")
 def error_page():

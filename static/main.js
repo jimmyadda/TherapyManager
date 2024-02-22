@@ -75,8 +75,6 @@ function Remove_file(event){
 
 }
 
-
-
 function download_file(event){  
     let id = document.querySelector("[name = 'id']").value;
     let userid = document.querySelector("[name = 'userid']").value;    
@@ -84,7 +82,6 @@ function download_file(event){
     var file_to_dowload = file.getAttribute("name");
 
 }
-
 
 function Remove_folder(event){ 
     const res = confirm("Are you sure you want to delete that project?");

@@ -33,7 +33,7 @@ $(document).ready(function () {
         var settings = {
             "async": true,
             "crossDomain": true,
-            "url": "patient/" + id,
+            "url": "patientapi/" + id,
             "method": "DELETE",
             "headers": {
                 "cache-control": "no-cache",
@@ -66,7 +66,7 @@ swal({
         var settings = {
             "async": true,
             "crossDomain": true,
-            "url": "patient/" + id,
+            "url": "patientapi/" + id,
             "method": "PUT",
             "headers": {
                 "content-type": "application/json",
@@ -124,6 +124,9 @@ swal({
                         mData: 'pat_address'
                     },
                     {
+                        mData: 'pat_email'
+                    },
+                    {
                         mData: 'pat_ph_no'
                     },
                     {
@@ -177,10 +180,7 @@ swal({
     $("#addpatient").click(function () {
 $('#detailform input,textarea').val("")
         $('#myModal').modal().one('shown.bs.modal', function (e) {
-
-console.log('innn')
             $("#savethepatient").off("click").on("click", function(e) {
-            console.log("inn")
             var instance = $('#detailform').parsley();
             instance.validate()
                     if(instance.isValid()){

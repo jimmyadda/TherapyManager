@@ -37,6 +37,7 @@ pat_last_name TEXT NOT NULL,
 pat_insurance_no TEXT NOT NULL,
 pat_ph_no TEXT NOT NULL,
 pat_date DATE DEFAULT (datetime('now','localtime')),
+pat_email TEXT NOT NULL,
 pat_address TEXT NOT NULL);''')
 
 conn.execute('''CREATE TABLE if not exists doctor
