@@ -19,6 +19,7 @@ from package.doctor import Doctors, Doctor
 from package.appointment import Appointments, Appointment
 from package.common import Common
 from package.User import User
+from package.medicalnote import Medicalnote,Medicalnotes
 from flask_mail import Mail, Message
 from create_account import create_account
 from mail import send_notification
@@ -35,6 +36,8 @@ api.add_resource(Doctors, '/doctorapi')
 api.add_resource(Doctor, '/doctorapi/<int:id>')
 api.add_resource(Appointments, '/appointmentapi')
 api.add_resource(Appointment, '/appointmentapi/<int:id>')
+api.add_resource(Medicalnotes, '/medicalnoteapi')
+api.add_resource(Medicalnote, '/medicalnoteapi/<int:id>')
 api.add_resource(Common, '/common') 
 
 
@@ -531,7 +534,63 @@ def update_patien():
         #return redirect(f'/patientform?id={id}')
     else:
        return "ERROR"
+
+@app.route("/medicalnote" , methods=['GET'])
+@flask_login.login_required
+def medicalnote_page():
+    data = request.values
+    print(data)
+    if 'noteid' in request.values:
+        noteid = request.values['noteid']
+        med = Medicalnote()
+        mednote = med.get(noteid)
+        print(mednote)
+    user = flask_login.current_user.get_dict()
+    pat_id = data['id']
+    apps = Appointments()
+    appointments = apps.get() 
+    notes = Medicalnotes()
+    pat_mednotes = notes.getnotebypatient(pat_id)     
+    print(pat_mednotes)
+    return render_template('medicalnote.html',user=user,appointments=appointments,pat_mednotes=pat_mednotes)
+
+@app.route("/patientnotes" , methods=['GET'])
+@flask_login.login_required
+def patientnotes_page():
+    data = request.values
+    json.loads(data)
+    print('data:', data)
+    if 'noteid' in request.values:
+        noteid = request.values['noteid']
+        med = Medicalnote()
+        mednote = med.get(noteid)
+        print(mednote)
+    user = flask_login.current_user.get_dict()
+    pat_id = data['id']
+    apps = Appointments()
+    appointments = apps.get() 
+    notes = Medicalnotes()
+    pat_mednotes = notes.getnotebypatient(pat_id)     
+    print(pat_mednotes)
+    return render_template('patientnotes.html',user=user,pat_mednotes=pat_mednotes)
+
+@app.route("/medicalnote" , methods=['POST'])
+@flask_login.login_required
+def updatemedicalnote():
+    user = flask_login.current_user.get_dict()
+    data = dict(request.values)
+    id = data['pat_id']
+    contentbdy = data['content']
+    now = datetime.now().strftime("%Y-%m-%d")
+
+    sql = f"INSERT into medrecords (pat_id,create_date,body) VALUES  ('{id}','{now}','{contentbdy}');"
+    ok = database_write(sql,data)
+    if ok == 1:
+       return render_template('medicalnote.html',user=user,data=data)
+    else:
+       return "ERROR"
     
+
 
 @app.route("/error")
 def error_page():

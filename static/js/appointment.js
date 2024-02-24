@@ -165,35 +165,6 @@ swal({
 
     })
 
-  // Handel date
-
-//   var array = ["2024-02-14","2024-02-15","2024-02-16"]
-
-//   $('#datepicker1').datepicker({
-//       beforeShowDay: function(date){
-//           var string = jQuery.datepicker.formatDate('yy-mm-dd', date);
-//           return [ array.indexOf(string) == -1 ]
-//       }
-//   });
-
-
-
-    // $("#datepicker1").datetimepicker().on("hide", function(e){   
-    //   var first = e.target.value;  
-    //   first = new Date(first);  
-    //   const yyyy = first.getFullYear();
-    //   let mm = first.getMonth() + 1; // Months start at 0!
-    //   let dd = first.getDate();   
-    //   let HH = first.getHours();  
-    //   let min = first.getMinutes();  
-    //   let ss = first.getSeconds();
-    //   if (dd < 10) dd = '0' + dd;
-    //   if (mm < 10) mm = '0' + mm;  
-    //   first = yyyy + '-' + mm + '-' + dd+ " " + HH+":"+min+":00" ;  
-    //   var x = document.getElementById("datepicker1");      
-    //   x.value = first;
-    // });
-
 
 var doctorSelect=""
  function getDoctor() {
@@ -220,6 +191,7 @@ var doctorSelect=""
         })
         }
 var patientSelect=""
+
   function getPatient() {
 
         var settings = {

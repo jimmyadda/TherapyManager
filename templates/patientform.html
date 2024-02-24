@@ -47,11 +47,7 @@
 
 
 </head>
-{%if message != ""%}
- <body onload="showmsg('{{message}}');">
-{% else %}
  <body>
-{% endif %}
     <nav role="navigation" class="navbar topnavbar">
         <!-- START navbar header-->
         <div class="navbar-header">
@@ -105,7 +101,7 @@
                     <div class="form-group">
                         <label class="col-lg-2 control-label">Id</label>
                         <div class="col-lg-10">
-                        <input type="text"  class="form-control" value="" name="pat_id">
+                        <input readonly type="text"  class="form-control" value="" name="pat_id">
                         </div>
                     </div>
             </td>
@@ -173,13 +169,18 @@
             </td>
 
             <td>
-
+                <div class="form-group">
+                    <div class="col-lg-10">
+                        <button id="savethepatient" type="button" class="btn btn-success" onclick="openmedical()" >Medical Notes</button>
+                    </div>
+                 </div>                    
             </td>
+
             </tr>
             <tr>
                 <td>
                     <input type="button" name="submit-save" class="blue icon-save" onclick="updatePatientdet();" value="Save update">
-                </td>                
+                </td>              
             </tr>
             
         </form>
@@ -190,7 +191,6 @@
     <script>
             $( document ).ready(function() {
                 let test = sessionStorage.getItem("pat_det");
-
                 let json_data = JSON.stringify(test);
                 var data = JSON.parse(json_data); 
                 const newdata = JSON.parse(data); 
@@ -246,7 +246,11 @@
     }
 
 
-
+    function openmedical(){
+        let pat_id =  document.getElementsByName('pat_id')[0].value
+        window.open('/patientnotes?id='+pat_id); 
+        return false;
+    }
     </script>
 </body>
    <!-- =============== VENDOR SCRIPTS ===============-->

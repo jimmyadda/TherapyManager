@@ -1,8 +1,7 @@
 $(document).ready(function () {
 
     var table
-
-
+    
     function addPatient(data) {
 
         var settings = {
