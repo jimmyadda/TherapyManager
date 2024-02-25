@@ -131,8 +131,12 @@
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const id = urlParams.get('id')
+    const noteid = urlParams.get('noteid')
     var content = document.getElementById('editor').innerHTML;
     let f = new FormData();
+    if (noteid > 0){
+    f.append("noteid",noteid)
+    }
     f.append("pat_id",id)
     f.append("content",JSON.stringify({content}));
     fetch("/medicalnote",{
@@ -146,8 +150,8 @@
         console.error('Error:', error);
         alert('Failed to save text');
     });
-   
    }
+   
 
   function getPatient(id) {
     var patientSelect="";
