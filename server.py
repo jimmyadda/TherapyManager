@@ -539,33 +539,37 @@ def update_patien():
 @flask_login.login_required
 def medicalnote_page():
     data = request.values
-    print(data)
     if 'noteid' in request.values:
         noteid = request.values['noteid']
         med = Medicalnote()
         mednote = med.get(noteid)
-        print(mednote)
     user = flask_login.current_user.get_dict()
     pat_id = data['id']
     apps = Appointments()
     appointments = apps.get() 
     notes = Medicalnotes()
-    pat_mednotes = notes.getnotebypatient(pat_id)     
-    print(pat_mednotes)
-    return render_template('medicalnote.html',user=user,appointments=appointments,pat_mednotes=pat_mednotes)
+    pat_mednotes = notes.getnotebypatient(pat_id)   
+    texteditor = pat_mednotes[0]['body']
+    y = json.loads(texteditor)
+    texteditor = y
+    print(texteditor['content'])
+    session['textineditor'] = texteditor['content']
+    print(texteditor)
+    return render_template('medicalnote.html',user=user,appointments=appointments,pat_mednotes=pat_mednotes,texteditor=texteditor)
 
 @app.route("/patientnotes" , methods=['GET'])
 @flask_login.login_required
 def patientnotes_page():
+    user = flask_login.current_user.get_dict()
     data = request.values
-    json.loads(data)
-    print('data:', data)
+    if 'id' in request.values:
+     id = request.values['id']
+     #json.loads(data)
     if 'noteid' in request.values:
         noteid = request.values['noteid']
         med = Medicalnote()
         mednote = med.get(noteid)
         print(mednote)
-    user = flask_login.current_user.get_dict()
     pat_id = data['id']
     apps = Appointments()
     appointments = apps.get() 

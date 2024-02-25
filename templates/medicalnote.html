@@ -84,12 +84,19 @@
 
 </div>
 
+{% if session['textineditor'] %}
 
-
+<div id="texttoedit" style="display: none;"> {{session['textineditor']}} </div>
 <div id="editor" contenteditable="true"></div>
+{% else %}
+<div id="editor" contenteditable="true"></div>
+{% endif %}
 <br>
 <br>
 <button style="margin-top: 20px;" id="savethepatient" type="button" class="btn btn-primary" onclick="saveText()" >Save changes</button>
+
+
+
 
 <script>
 
@@ -167,11 +174,14 @@
         }
 
    $(document).ready(function () {
+    var texttoedit = document.getElementById("texttoedit").textContent 
+    if(texttoedit){ $( "#editor").html(texttoedit); }
+
     const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const id = urlParams.get('id')
         //patient select    
-         getPatient(id);        
+         getPatient(id);                            
     });
 </script>
 

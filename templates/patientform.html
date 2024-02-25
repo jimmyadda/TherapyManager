@@ -171,7 +171,7 @@
             <td>
                 <div class="form-group">
                     <div class="col-lg-10">
-                        <button id="savethepatient" type="button" class="btn btn-success" onclick="openmedical()" >Medical Notes</button>
+                        <button id="savethepatient" type="button" class="btn btn-success" onclick="opennotes()" >Medical Notes</button>
                     </div>
                  </div>                    
             </td>
@@ -246,7 +246,7 @@
     }
 
 
-    function openmedical(){
+    function opennotes(){
         let pat_id =  document.getElementsByName('pat_id')[0].value
         window.open('/patientnotes?id='+pat_id); 
         return false;

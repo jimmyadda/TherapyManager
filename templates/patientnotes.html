@@ -103,7 +103,6 @@
                                       <th style="width:15%"></th>
                                       <th style="width:15%"></th>
                                       <th style="width:15%"></th>
-                                      <th style="width:15%"></th>
                                  </tr>
                               </thead>
                               <tbody>
@@ -163,41 +162,66 @@
 
    <!-- =============== APP SCRIPTS ===============-->
    <script src="/static/app/js/app.js"></script>
-   <script src="/static/js/medicalnote.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </body>
 
 
 <script>
+   $(document).ready(function () {
+
      var table = $('#datatable4').DataTable();
 
-              $('#datatable4 tbody').on('click', '.delete-btn', function () {
+            $('#datatable4 tbody').on('click', '.delete-btn', function () {
                 var data = table.row($(this).parents('tr')).data();
                 console.log(data)
                 deleteMedicalNote(data[0])
-
             });
-            $('.btn-edit').one("click", function (e) {
+
+            $('.btn-edit').on("click", function (e) {
                 var data = table.row($(this).parents('tr')).data();
-                $('#myModal').modal().one('shown.bs.modal', function (e) {
-                    for (var key in data) {
-                        $("[name=" + key + "]").val(data[key])
-                    }
-                    $("#savethepatient").off("click").on("click", function (e) {
-                        var instance = $('#detailform').parsley();
-                        instance.validate()
-                        console.log(instance.isValid())
-                        if (instance.isValid()) {
-                            jsondata = $('#detailform').serializeJSON();
-                            updateMedicalNote(jsondata, data.doc_id)
-                        }
-
-                    })
-                })
-
-
-
+                console.log(data[0]);               
+                openmedicalnote(data[0],data[6])
             });
+
+
+       function deleteMedicalNote(id) {
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "url": "medicalnoteapi/" + id,
+            "method": "DELETE",
+            "headers": {
+                "cache-control": "no-cache",
+                "postman-token": "28ea8360-5af0-1d11-e595-485a109760f2"
+            }
+        }
+        //Yes No ?
+        swal({
+            title: "Are you sure?",
+            text: "You will not be able to recover this data",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, delete it!",
+            closeOnConfirm: false
+        }, function () {
+            $.ajax(settings).done(function (response) {
+                swal("Deleted!", "Medical Note has been deleted.", "success");
+                table.destroy();
+                $('#datatable4 tbody').empty(); // empty in case the columns change
+                getMedicalNote()
+            });
+        });
+
+    }
+   
+
+    function openmedicalnote(noteid,patienid){               
+        window.open('/medicalnote?id='+patienid+"&noteid="+noteid); 
+        return false;
+    }
+
+   });
 
 </script>
 </html>
