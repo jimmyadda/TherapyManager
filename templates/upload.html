@@ -6,7 +6,7 @@
 
     <body>
         <div class="pageheader">
-            <div class="titlebar">Files for task : {{ task.id }}</div>
+            <div class="titlebar">Files for patient :{{ patientdata[0]['pat_first_name'] }} {{ patientdata[0]['pat_last_name'] }}</div>
         </div>
 
         <form method="POST" action="/upload" enctype="multipart/form-data">
@@ -19,15 +19,12 @@
                 <input type="submit" name="submit-save" class="blue" value="Upload File">
                 <!-- <input type="submit" value="Submit"> -->
             </p>
-            <input type="hidden" name="id" value="{{ task.id }}">
-            <input type="hidden" name="folderid" value="{{ task.folderid }}">
-            <input type="hidden" name="userid" value="{{ task.userid }}">
+            <input type="hidden" name="id" value="{{ patientdata[0]['pat_id'] }}">
         </form>
 </body>
 <script>
     window.onunload = refreshParent;
     function refreshParent() {
-        
         window.opener.location.reload();
         window.close();
     }

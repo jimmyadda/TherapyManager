@@ -318,17 +318,16 @@ def upload():
         if file.filename == '':
             flash('No file selected for uploading')
             return redirect(request.url)
-
         if file :                            
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             create = datetime.now().strftime("%Y-%m-%d")
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            sql = f"INSERT into TasksFiles (id,filename,filepath,createdate,userid) VALUES ('{id}','{filename}','{filepath}','{create}','{user['userid']}');"
+            sql = f"INSERT into Patientfiles (pat_id,filename,filepath,createdate,userid) VALUES ('{id}','{filename}','{filepath}','{create}','{user['userid']}');"
             ok = database_write(sql,data)
             if ok == 1:
                print('File successfully uploaded')
-               return redirect(f"/main?folderid={data['folderid']}&id={id}")            
+               return redirect(f"/patientform?id={id}")            
             else:
                return "ERROR"
         else:
@@ -339,26 +338,26 @@ def upload():
 def upload_page():
     id = request.args.get('id')
     user = flask_login.current_user.get_dict()
-    maintask = database_read(f"select * from tasks where id= '{id}';")
-    if len(maintask) == 1:
-        maintask = maintask[0]
-    else:
-        maintask={}
-    return render_template('upload.html',task=maintask)
+    patientdata = database_read(f"select * from patient where pat_id= '{id}';")
+    print("patientdata",patientdata)
+    return render_template('upload.html',patientdata=patientdata)
 
-@app.route('/delete_file', methods=['POST'])
+@app.route('/delete_file', methods=['DELETE'])
 @flask_login.login_required
 def delete_file():
+    user = flask_login.current_user.get_dict()
     data=  dict(request.values)
+    print("data",data)
     id = data['id']
+    print("id",id)
     filename =  data['filename']
-    sql = f"Delete from TasksFiles where id = '{id}' and filename = '{filename}';"
+    sql = f"Delete from Patientfiles where pat_id ='{id}' and filename = '{filename}';"
     ok = database_write(sql,data)
     if ok == 1:
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         os.remove(filepath)
         print('File successfully Deleted')
-        return redirect(f"/main")             
+        return render_template('patientform.html')                         
     else:
         return "ERROR" 
 
@@ -367,7 +366,7 @@ def delete_file():
 def download_file(filename):
     user = flask_login.current_user.get_dict()
     data=  dict(request.values)    
-    myfile =  database_read(f"select * from TasksFiles where filename= '{filename}';")
+    myfile =  database_read(f"select * from Patientfiles where filename= '{filename}';")
     if myfile:
         str_path = myfile[0]['filepath']
         for root, dirs, files in os.walk(app.config['UPLOAD_FOLDER']):
@@ -514,10 +513,34 @@ def patient_folder_Load():
     id = request.args.get('id')
     user = flask_login.current_user.get_dict()    
     patientdata = database_read(f"select * from patient where pat_id= '{id}';")
-    return render_template('patientform.html',patient=patientdata, alert="")
-
-
-
+    tasksfiles = database_read(f"select * from Patientfiles where pat_id= '{id}';") #id = pat_id
+    data = request.values
+    if 'id' in request.values:
+     id = request.values['id']
+     #json.loads(data)
+    if 'noteid' in request.values:
+        noteid = request.values['noteid']
+        med = Medicalnote()
+        mednote = med.get(noteid)
+    pat_id = data['id']
+    apps = Appointments()
+    appointments = apps.get() 
+    notes = Medicalnotes()
+    pat_mednotes = notes.getnotebypatient(pat_id)
+    length = len(pat_mednotes)
+    
+    for i in range(length):
+        # GET ONLY TEXT from DB
+        test= pat_mednotes[i]['body']
+        data = json.loads(test)
+        content_html = data.get('content', '')
+        soup = BeautifulSoup(content_html, 'html.parser')
+        text = soup.get_text() 
+        # Get text and split by <br> tag
+        text_list = [tag.get_text() for tag in soup.find_all('div')]
+        text_with_separators = ','.join(text_list)
+        pat_mednotes[i]["text"]=text_with_separators   
+    return render_template('patientform.html',user=user,patientdata=patientdata,pat_mednotes=pat_mednotes,tasksfiles=tasksfiles, alert="")
 
 @app.route("/patientform", methods=["POST"])
 @flask_login.login_required
@@ -525,19 +548,16 @@ def update_patien():
     user = flask_login.current_user.get_dict()
     form = dict(request.values)
     id = form['pat_id']
-    print(form)
+    print("patientform",form)
     sql = "UPDATE patient SET pat_first_name =:pat_first_name, pat_last_name =:pat_last_name, pat_ph_no =:pat_ph_no, pat_address=:pat_address, pat_email =:pat_email, pat_insurance_no =:pat_insurance_no where pat_id =:pat_id"
     ok = database_write(sql,form)
     ok=1    
     if ok == 1:
         patientdata = database_read(f"select * from patient where pat_id= '{id}';")
         message = 'Success'
-        return render_template('patientform.html',patient=patientdata,message=message)
-        #return redirect(f'/patientform?id={id}')
+        return render_template('patientform.html',user=user,patient=patientdata,message=message)
     else:
        return "ERROR"
-
-
 
 @app.route("/patientnotes" , methods=['GET'])
 @flask_login.login_required
@@ -562,32 +582,37 @@ def patientnotes_page():
     content_html = data.get('content', '')
     soup = BeautifulSoup(content_html, 'html.parser')
     text = soup.get_text() 
-    print("soup",text)
-    pat_mednotes[0]["text"]=text
-     
-    print(pat_mednotes)
+    # Get text and split by <br> tag
+    text_list = [tag.get_text() for tag in soup.find_all('div')]
+    text_with_separators = ','.join(text_list)
+    pat_mednotes[0]["text"]=text_with_separators
     return render_template('patientnotes.html',user=user,pat_mednotes=pat_mednotes)
 
 @app.route("/medicalnote" , methods=['GET'])
 @flask_login.login_required
 def medicalnote_page():
-    data = request.values
-    if 'noteid' in request.values:
-        noteid = request.values['noteid']
-        med = Medicalnote()
-        mednote = med.get(noteid)
     user = flask_login.current_user.get_dict()
+    data = request.values
     pat_id = data['id']
     apps = Appointments()
     appointments = apps.get() 
-    notes = Medicalnotes()
-    pat_mednotes = notes.getnotebypatient(pat_id)   
-    texteditor = pat_mednotes[0]['body']
-    y = json.loads(texteditor)
-    texteditor = y
-    print(texteditor['content'])
-    session['textineditor'] = texteditor['content']
-    print(texteditor)
+    texteditor = ""
+    pat_mednotes=""
+    if 'noteid' in request.values:
+        noteid = request.values['noteid']
+        print("noteid",noteid)
+        med = Medicalnote()
+        mednote = med.get(noteid)
+        # notes = Medicalnotes()
+        # pat_mednotes = notes.getnotebypatient(pat_id)   
+        pat_mednotes = database_read(f"select * from medrecords where pat_id= '{pat_id}' and rec_id = '{noteid}';")
+        print("pat_mednotes",pat_mednotes)
+        texteditor = pat_mednotes[0]['body']
+        y = json.loads(texteditor)
+        texteditor = y
+        session['textineditor'] = texteditor['content']
+    else:
+        session['textineditor'] = " "
     return render_template('medicalnote.html',user=user,appointments=appointments,pat_mednotes=pat_mednotes,texteditor=texteditor)
 
 @app.route("/medicalnote" , methods=['POST'])
@@ -610,7 +635,7 @@ def updatemedicalnote():
             return "ERROR"
     else:
         #New 
-        print("update:", noteid)   
+        print("insert:", id)   
         now = datetime.now().strftime("%Y-%m-%d")
         sql = f"INSERT into medrecords (pat_id,create_date,body) VALUES  ('{id}','{now}','{contentbdy}');"
         ok = database_write(sql,data)

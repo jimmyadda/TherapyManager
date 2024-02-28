@@ -136,7 +136,7 @@ swal({
                     {
                         mRender: function (o) {
                             
-                            return '<button id="patrecords" class="btn-xs btn btn-success edit-btn" type="button">Medical Records</button>';
+                            return '<button id="patrecords" class="btn-xs btn btn-success edit-btn" type="button">Patient Folder</button>';
                         }
                     },
                     {

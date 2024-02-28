@@ -37,6 +37,7 @@
         padding: 10px;
         font-family: Arial, sans-serif;
         overflow-y: auto;
+        resize: both;overflow: auto;
     }
 </style>
 </head>
@@ -50,7 +51,7 @@
         </div>
      </div>
 
-<div class="editor-toolbar">
+<div class="editor-toolbar" >
     <h4 style="text-align: end;">עדכן רשומה רפואית למטופל</h4>
     <button class="editor-button" onclick="execCommand('bold')"><b>B</b></button>
     <button class="editor-button" onclick="execCommand('italic')"><i>I</i></button>
@@ -85,7 +86,6 @@
 </div>
 
 {% if session['textineditor'] %}
-
 <div id="texttoedit" style="display: none;"> {{session['textineditor']}} </div>
 <div id="editor" contenteditable="true"></div>
 {% else %}
@@ -144,8 +144,6 @@
     "body":f,       
     }).then(response => response.text()).then(data => {
         console.log(data)
-        alert('Text saved successfully!');
-        location.reload();
     }).catch(error => {
         console.error('Error:', error);
         alert('Failed to save text');
@@ -179,7 +177,7 @@
 
    $(document).ready(function () {
     var texttoedit = document.getElementById("texttoedit").textContent 
-    if(texttoedit){ $( "#editor").html(texttoedit); }
+    if(texttoedit){ $("#editor").html(texttoedit); }
 
     const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
@@ -189,5 +187,13 @@
     });
 </script>
 
+
+<script>
+    window.onunload = refreshParent;
+    function refreshParent() {
+        window.opener.location.reload();
+        window.close();
+    }
+</script>
 </body>
 </html>

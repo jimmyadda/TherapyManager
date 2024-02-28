@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head  style="overflow-x: hidden;">
     <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,7 +25,7 @@
    <link rel="stylesheet" href="static/app/css/app.css" id="maincss">
    <link rel="stylesheet" type="text/css" href="/static/main.css" media="screen"/>
 
-    <title>Patient Details</title>
+    <title>Therapy Manager - Patient Details</title>
 
     <style>
         .form-group {
@@ -41,7 +41,6 @@
         tr{display:table-row;}
         td{display:table-cell;}
 
-        .form-control{margin-right: 30px;}
     </style>
 
 
@@ -93,8 +92,7 @@
 
     <div class="main">
 
-    <table> 
-
+    <table id="maintbl"> 
         <form method="POST" id="patientDetail" enctype="multipart/form-data" action="/patientform">
             <tr>
                 <td>
@@ -167,25 +165,85 @@
                 </div>
              </div>
             </td>
-
-            <td>
-                <div class="form-group">
-                    <div class="col-lg-10">
-                        <button id="savethepatient" type="button" class="btn btn-success" onclick="opennotes()" >Medical Notes</button>
-                    </div>
-                 </div>                    
-            </td>
-
             </tr>
             <tr>
                 <td>
                     <input type="button" name="submit-save" class="blue icon-save" onclick="updatePatientdet();" value="Save update">
-                </td>              
+                </td>             
             </tr>
-            
+    <input type="hidden" name="userid" value="{{ user.userid }}">
         </form>
     </table> 
+    
+    <br>
+    <div class="form-group">
+        <br>
+        <label class="col-lg-2 control-label">Patient file Attachments :</label>
+        <br>
+            <div class="col-lg-10"> <a href="#" onclick="openpatienfiles()"> Upload Files!</a></div>
+                <table id="filestbl">                             
+                     {% for taskfile in tasksfiles %}         
+                      <tr>
+                        <td class='filenames' name={{ taskfile['filename'] }} id={{taskfile['pat_id']}}>{{ taskfile['filename'] }} </td>
+                        <td><a id="openfile" href="/download_file/{{ taskfile['filename'] }}" >View File</a> </td>                    
+                        <td><button title="Remove file" class="removebtn"  name={{ taskfile['filename'] }} id="removefile_button"></button> </td>
+                       </tr>
+                     {% endfor %}
+                </table>
+        </div>
 
+          <!-- Records section-->
+          <section>
+            <!-- Page content-->
+            <div class="content-wrapper" style="width: 85%;">
+               <div class="content-heading">
+                  <!-- START Language list-->
+                  <!-- END Language list    -->
+                 Medical Notes
+                  <small data-localize="dashboard.WELCOME"></small>
+                   <div class="pull-right">
+                     <div class="btn-group">
+                        <button  style="bottom: 27px;" id="newmedicalnote" class="mb-sm btn btn-primary" type="button">Add Medical note</button>
+                     </div>
+                  </div>
+               </div>
+              <div class="row">
+                     <div class="col-lg-12">
+                        <div class="panel panel-default"  style="width: 1400px; resize: both;overflow: auto; padding: 15px;">
+                           <div class="table-responsive">
+                              <table id="datatable4" class="table table-striped">
+                                 <thead>
+                                    <tr>
+                                       <th style="width:10%">Rec</th>
+                                       <th style="width:25%">Patient</th>
+                                       <th style="width:35%">Desc</th>
+                                       <th style="width: 10%;">Date</th>
+                                         <th style="width:15%"></th>
+                                         <th style="width:15%"></th>
+                                         <th style="width:15%"></th>
+                                    </tr>
+                                 </thead>
+                                 <tbody>
+                                   {% for note in pat_mednotes%}
+                                   <tr>
+                                     <td>{{ note['rec_id'] }}</td>
+                                     <td>{{ note['pat_first_name'] }} {{ note['pat_last_name'] }}</td>
+                                     <td>{{ note['text'] }}</td>                
+                                     <td>{{ note['create_date'] }}</td>  
+                                     <td><button class="btn-xs btn btn-info btn-edit" type="button">Edit</button> &nbsp;
+                                     <button class="btn-xs btn btn-danger delete-btn" type="button">Delete</button></td>
+                                     <td name="id" class="noteid" style="display: none;">{{ note['rec_id'] }}</td>
+                                     <td name="id" class="patientid" style="display: none;">{{ note['pat_id'] }}</td>
+                                   </tr>
+                                   {% endfor %} 
+                                 </tbody>
+                              </table>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+            </div>
+         </section>
     </div>
 
     <script>
@@ -244,12 +302,19 @@
 
 
     }
-
-
+    
     function opennotes(){
-        let pat_id =  document.getElementsByName('pat_id')[0].value
+        let pat_id =  document.getElementById('patientid').value
         window.open('/patientnotes?id='+pat_id); 
         return false;
+    }
+
+    function openpatienfiles(){
+        let pat_id =  document.getElementsByName('pat_id')[0].value
+        window.open("/upload?id="+pat_id+"",'File Upload','width=600,height=300,resizable=no');
+        return false;
+        //window.open('/patientnotes?id='+pat_id); 
+        //return false;
     }
     </script>
 </body>
@@ -277,6 +342,120 @@
    <!-- =============== PAGE VENDOR SCRIPTS ===============-->
    <!-- =============== APP SCRIPTS ===============-->
    <script src="static/app/js/app.js"></script>
-<!-- <script src="static/js/patient.js"></script> -->
+
+<script>
+    $(document).ready(function () {
+      let removefiles = document.querySelectorAll("#removefile_button");
+        removefiles.forEach(btn => {
+        btn.addEventListener('click',Remove_file);
+    });
+      var table = $('#datatable4').DataTable();
+ 
+             $('#datatable4 tbody').on('click', '.delete-btn', function () {
+                 var data = table.row($(this).parents('tr')).data();
+                 console.log(data)
+                 deleteMedicalNote(data[0])
+             });
+ 
+             $('.btn-edit').on("click", function (e) {
+                 var data = table.row($(this).parents('tr')).data();
+                 console.log(data[0]);               
+                 openmedicalnote(data[0],data[6])
+             });
+ 
+              //////////////
+             $('#newmedicalnote').on("click", function (e) {
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+                const patienid = urlParams.get('id')
+                window.open('/medicalnote?id='+patienid); 
+                return false;
+             });
+
+        function deleteMedicalNote(id) {
+         var settings = {
+             "async": true,
+             "crossDomain": true,
+             "url": "medicalnoteapi/" + id,
+             "method": "DELETE",
+             "headers": {
+                 "cache-control": "no-cache",
+                 "postman-token": "28ea8360-5af0-1d11-e595-485a109760f2"
+             }
+         }
+         //Yes No ?
+         swal({
+             title: "Are you sure?",
+             text: "You will not be able to recover this data",
+             type: "warning",
+             showCancelButton: true,
+             confirmButtonColor: "#DD6B55",
+             confirmButtonText: "Yes, delete it!",
+             closeOnConfirm: false
+         }, function () {
+             $.ajax(settings).done(function (response) {
+                 swal("Deleted!", "Medical Note has been deleted.", "success");
+                 table.destroy();
+                 $('#datatable4 tbody').empty(); // empty in case the columns change
+                 getMedicalNote()
+             });
+         });
+ 
+     }
+    
+ 
+     function openmedicalnote(noteid,patienid){               
+         window.open('/medicalnote?id='+patienid+"&noteid="+noteid); 
+         return false;
+     }
+      
+    async function Remove_file(event){  
+            //let folderid = document.querySelector("[name = 'folderid']").value;
+            let id = document.querySelector("[name = 'pat_id']").value;
+            let userid = document.querySelector("[name = 'userid']").value;
+            var $row = $(this).closest("tr");
+            var file = $row.find(".filenames");
+
+            console.log(file[0]);
+            file[0].style.text += ' -Deleting';
+            var file_to_delete = file[0].getAttribute("name");
+            console.log(file_to_delete)
+            console.log(id,userid,file_to_delete)
+            if(file_to_delete.length > 0){
+
+                let f = new FormData();
+                f.append("id",id)
+                f.append("userid",userid);
+                f.append("filename",file_to_delete);
+                 await fetch('/delete_file', {
+                    method: 'DELETE',
+                    body: f
+                })
+                .then((response) => {
+                // handle success
+                response.json()
+                console.log("Remove_file- success",response);
+                location.reload()
+                })
+
+                return "ok"
+                // .then(response => response.json())
+                // .then(response => console.log(response))
+            } //end if file
+
+        }
+
+   function HandleRemove_file(event) {
+        Remove_file(event).then((json) => {
+                // handle success
+                console.log("Remove_file- success",json);
+                location.reload()
+                })
+            .catch(error => error);
+            
+        }
+    });
+ 
+ </script>
 
 </html>

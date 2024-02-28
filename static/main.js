@@ -48,6 +48,7 @@ function logout_user(event){
         }
 
 function Remove_file(event){  
+    alert("removing file")
     let folderid = document.querySelector("[name = 'folderid']").value;
     let id = document.querySelector("[name = 'id']").value;
     let userid = document.querySelector("[name = 'userid']").value;
