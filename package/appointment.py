@@ -14,6 +14,11 @@ class Appointments(Resource):
         appointment = conn.execute("SELECT p.*,d.*,a.* from appointment a LEFT JOIN patient p ON a.pat_id = p.pat_id LEFT JOIN doctor d ON a.doc_id = d.doc_id ORDER BY appointment_date DESC").fetchall()
         return appointment
 
+    def getappointmentsbypatient(self,patid):
+        """Retrive list of all the appointment of patient"""
+        patappointments = conn.execute("SELECT p.*,m.*,d.* from appointment m LEFT JOIN patient p ON m.pat_id = p.pat_id LEFT JOIN doctor d ON m.doc_id = d.doc_id where m.pat_id = ? ORDER BY m.appointment_date DESC", (patid,)).fetchall()
+        return patappointments 
+    
     def post(self):
         """Create the appoitment by assiciating patient and docter with appointment date"""
 

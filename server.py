@@ -524,7 +524,8 @@ def patient_folder_Load():
         mednote = med.get(noteid)
     pat_id = data['id']
     apps = Appointments()
-    appointments = apps.get() 
+    appointments = apps.getappointmentsbypatient(pat_id) 
+    print(appointments)    
     notes = Medicalnotes()
     pat_mednotes = notes.getnotebypatient(pat_id)
     length = len(pat_mednotes)
@@ -540,7 +541,7 @@ def patient_folder_Load():
         text_list = [tag.get_text() for tag in soup.find_all('div')]
         text_with_separators = ','.join(text_list)
         pat_mednotes[i]["text"]=text_with_separators   
-    return render_template('patientform.html',user=user,patientdata=patientdata,pat_mednotes=pat_mednotes,tasksfiles=tasksfiles, alert="")
+    return render_template('patientform.html',user=user,patientdata=patientdata,appointments=appointments,pat_mednotes=pat_mednotes,tasksfiles=tasksfiles, alert="")
 
 @app.route("/patientform", methods=["POST"])
 @flask_login.login_required
