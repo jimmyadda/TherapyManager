@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
        <!-- =============== VENDOR STYLES ===============-->
+       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
    <!-- FONT AWESOME-->
    <link rel="stylesheet" href="static/vendor/fontawesome/css/font-awesome.min.css">
    <!-- SIMPLE LINE ICONS-->
@@ -20,7 +21,10 @@
    <link rel="stylesheet" href="static/vendor/dataTables.fontAwesome/index.css">
    <!-- =============== PAGE VENDOR STYLES ===============-->
    <!-- =============== BOOTSTRAP STYLES ===============-->
-   <link rel="stylesheet" href="static/app/css/bootstrap.css" id="bscss">
+   <!-- <link rel="stylesheet" href="static/app/css/bootstrap.css" id="bscss"> -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+   <link rel="stylesheet" href="static/vendor/datepicker/build/css/bootstrap-datetimepicker.min.css">
+
    <!-- =============== APP STYLES ===============-->
    <link rel="stylesheet" href="static/app/css/app.css" id="maincss">
    <link rel="stylesheet" type="text/css" href="/static/main.css" media="screen"/>
@@ -40,7 +44,15 @@
 
         tr{display:table-row;}
         td{display:table-cell;}
-
+        .glyphicon {
+            position: relative;
+            top: 1px;
+            display: inline-block;
+            font-family: "Glyphicons Halflings";
+            font-style: normal;
+            font-weight: 400;
+            line-height: 1;
+                            }
     </style>
 
 
@@ -247,7 +259,7 @@
          {%if appointments %}
          <section>
             <!-- Page content-->
-            <div class="content-wrapper">
+            <div class="content-wrapper" style="width: 85%;">
                <div class="content-heading">
                   <!-- START Language list-->
    
@@ -256,7 +268,7 @@
                   <small data-localize="dashboard.WELCOME"></small>
                    <div class="pull-right">
                      <div class="btn-group">
-                        <button  style="bottom: 27px;" id="addpatient"  class="mb-sm btn btn-primary" type="button">Book Appointment</button>   
+                        <button  style="bottom: 27px;" id="addpatient"  class="mb-sm btn btn-primary" type="button">Book Appointment for Patient</button>   
                      </div>
                   </div>
                </div>
@@ -436,16 +448,25 @@
        <script src="static/vendor/sweetalert/dist/sweetalert.min.js"></script>
    <!-- LOCALIZE-->
    <script src="static/vendor/jquery-localize-i18n/dist/jquery.localize.js"></script>
+   <script src="/static/vendor/datepicker/build/js/bootstrap-datetimepicker.min.js"></script> 
    <!-- =============== PAGE VENDOR SCRIPTS ===============-->
    <!-- =============== APP SCRIPTS ===============-->
+
    <script src="static/app/js/app.js"></script>
+
 
 <script>
     $(document).ready(function () {
-      let removefiles = document.querySelectorAll("#removefile_button");
-        removefiles.forEach(btn => {
-        btn.addEventListener('click',Remove_file);
-    });
+
+        var s = document.createElement("script");
+    s.type = "text/javascript";
+    s.src = "/static/js/appointmentpatientform.js";
+    $("head").append(s);
+
+            let removefiles = document.querySelectorAll("#removefile_button");
+                removefiles.forEach(btn => {
+                btn.addEventListener('click',Remove_file);
+            });
       var table = $('#datatable4').DataTable();
  
              $('#datatable4 tbody').on('click', '.delete-btn', function () {
@@ -552,23 +573,21 @@
             
         }
 
-        $("#addpatient").click(function () {
-            
-            $('#myModal').modal().one('shown.bs.modal', function (e) {
-                $("#savethepatient").off("click").on("click", function (e) {
-                    console.log("inn")
-                    var instance = $('#detailform').parsley();
-                    instance.validate()
-                    if (instance.isValid()) {
-                        jsondata = $('#detailform').serializeJSON();
-                        addmedicalnote(jsondata)
-                    }
+            $("#addpatient").click(function () {
+                $('#myModal').modal().one('shown.bs.modal', function (e) {
+                    $("#savethepatient").off("click").on("click", function (e) {
+                        console.log("inn")
+                        var instance = $('#detailform').parsley();
+                        instance.validate()
+                        if (instance.isValid()) {
+                            jsondata = $('#detailform').serializeJSON();
+                            addmedicalnote(jsondata)
+                        }
+
+                    })
 
                 })
-
             })
-
-})
     });
  
  </script>

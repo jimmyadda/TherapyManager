@@ -1,10 +1,13 @@
 $(document).ready(function () {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const patienid = urlParams.get('id')
+
 
     var table
-
-
+ 
     function addAppointment(data) {
-
+       console.log(data);
         var settings = {
             "async": true,
             "crossDomain": true,
@@ -22,8 +25,8 @@ $(document).ready(function () {
          $.notify("Appointment Added Successfully", {"status":"success"});
             $('.modal.in').modal('hide')
             table.destroy();
-            $('#datatable4 tbody').empty(); // empty in case the columns change   
-
+            $('#datatable5 tbody').empty(); // empty in case the columns change   
+             
             //send mail 
             let f = new FormData();
             f.append("id",data.pat_id)
@@ -64,7 +67,7 @@ swal({
  $.ajax(settings).done(function (response) {
    swal("Deleted!", "Appointment has been deleted.", "success");
             table.destroy();
-            $('#datatable4 tbody').empty(); // empty in case the columns change
+            $('#datatable5 tbody').empty(); // empty in case the columns change
             getAppointment()
         });
 
@@ -94,7 +97,7 @@ swal({
 
 
 
-            table = $('#datatable4').DataTable({
+            table = $('#datatable5').DataTable({
                 "bDestroy": true,
                 'paging': true, // Table pagination
                 'ordering': true, // Column ordering
@@ -118,7 +121,7 @@ swal({
                     }
         ]
             });
-            $('#datatable4 tbody').on('click', '.delete-btn', function () {
+            $('#datatable5 tbody').on('click', '.delete-btn', function () {
                 var data = table.row($(this).parents('tr')).data();
                 deleteAppointment(data.app_id)
             });
@@ -128,9 +131,6 @@ swal({
 
 
     }
-
-
-
 
     $("#addpatient").click(function () {
 
@@ -190,12 +190,12 @@ var doctorSelect=""
         }
 var patientSelect=""
 
-  function getPatient() {
+  function getPatient(patienid) {
 
         var settings = {
             "async": true,
             "crossDomain": true,
-            "url": "patientapi",
+            "url": "patientapi?id"+ patienid,
             "method": "GET",
             "headers": {
                 "cache-control": "no-cache"
@@ -212,6 +212,8 @@ var patientSelect=""
         }
 
 getDoctor()
-getPatient()
+getPatient(patienid)
 getAppointment()
+
+
 })
