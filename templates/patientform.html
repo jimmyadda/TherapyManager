@@ -221,7 +221,7 @@
                </div>
               <div class="row">
                      <div class="col-lg-12">
-                        <div class="panel panel-default"  style="width: 1400px; resize: both;overflow: auto; padding: 15px;">
+                        <div class="panel panel-default"  style="overflow: auto; padding: 15px;">
                            <div class="table-responsive">
                               <table id="datatable4" class="table table-striped">
                                  <thead>
@@ -256,7 +256,7 @@
                   </div>
             </div>
          </section>
-         {%if appointments %}
+
          <section>
             <!-- Page content-->
             <div class="content-wrapper" style="width: 85%;">
@@ -272,6 +272,7 @@
                      </div>
                   </div>
                </div>
+         {%if appointments %}            
               <div class="row">
                      <div class="col-lg-12">
                         <div class="panel panel-default"  style="padding: 15px;">
@@ -287,7 +288,7 @@
                                     </tr>
                                  </thead>
                                  <tbody>
-                                    {% for appointment in appointments%}
+                                    {% for appointment in appointments %}
                                     <tr>
                                       <td>{{ appointment['doc_first_name'] }} {{ appointment['doc_last_name'] }}</td>
                                       <td>{{ appointment['pat_first_name'] }} {{ appointment['pat_last_name'] }}</td>
@@ -300,71 +301,78 @@
                         </div>
                      </div>
                   </div>
-            </div>
+         {% endif %}
             <!-- Add appointment new -->
             <div id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" class="modal fade">
-                <div class="modal-dialog">
-                   <div class="modal-content">
-                      <div class="modal-header">
-                         <button type="button" data-dismiss="modal" aria-label="Close" class="close">
-                            <span aria-hidden="true">&times;</span>
-                         </button>
-                         <h4 id="myModalLabel" class="modal-title">Appointment</h4>
-                      </div>
-                      <div class="modal-body">
-                         <form data-parsley-validate="" novalidate="" class="form-horizontal" id="detailform">
-                                     <div class="form-group">
-                                        <label class="col-lg-2 control-label">Doctor</label>
-                                        <div class="col-lg-10">
-                                           <select required id="doctor_select" type="text" name="doc_id" class="form-control" placeholder="Please select doctor"></select>
-                                        </div>
-                                     </div>
-                                     <div class="form-group">
-                                        <label class="col-lg-2 control-label">Patient</label>
-                                        <div class="col-lg-10">
-                                           <select required id="patient_select" type="text" name="pat_id" class="form-control" placeholder="Please select Patient"></select>
-                                        </div>
-                                     </div>
-          
-                            <div class="form-group">
-                                        <label class="col-lg-2 control-label">Appointment date</label>
-          
-                                               <div class="col-lg-10">
-                                     <input id="datepicker1" size="16" type="text" name="appointment_date" required class="form-control form_datetime" value="">
-          </div>          
-                                     </div>                             
-                                  </form>                       
-                      </div>
-                      <div class="modal-footer">
-                         <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
-                         <button id="savethepatient" type="button" class="btn btn-primary">Save changes</button>
-                      </div>
-                   </div>
-                </div>
-             </div>
+                        <div class="modal-dialog">
+                           <div class="modal-content">
+                              <div class="modal-header">
+                                 <button type="button" data-dismiss="modal" aria-label="Close" class="close">
+                                    <span aria-hidden="true">&times;</span>
+                                 </button>
+                                 <h4 id="myModalLabel" class="modal-title">Appointment</h4>
+                              </div>
+                              <div class="modal-body">
+                                 <form data-parsley-validate="" novalidate="" class="form-horizontal" id="detailform">
+                                             <div class="form-group">
+                                                <label class="col-lg-2 control-label">Doctor</label>
+                                                <div class="col-lg-10">
+                                                   <select required id="doctor_select" type="text" name="doc_id" class="form-control" placeholder="Please select doctor"></select>
+                                                </div>
+                                             </div>
+                                             <div class="form-group">
+                                                <label class="col-lg-2 control-label">Patient</label>
+                                                <div class="col-lg-10">
+                                                   <select required id="patient_select" type="text" name="pat_id" class="form-control" placeholder="Please select Patient"></select>
+                                                </div>
+                                             </div>
+                  
+                                    <div class="form-group">
+                                                <label class="col-lg-2 control-label">Appointment date</label>
+                  
+                                           <div class="col-lg-10">
+                                             <input id="datepicker1" size="16" type="text" name="appointment_date" required class="form-control form_datetime" value="">
+                                                </div>          
+                                             </div>                             
+                                          </form>                       
+                              </div>
+                              <div class="modal-footer">
+                                 <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+                                 <button id="savethepatient" type="button" class="btn btn-primary">Save changes</button>
+                              </div>
+                           </div>
+                        </div>
+        </div> <!--end of Modal-->
+    </div> <!--end of content-wrapper-->
          </section>
-         {% endif %}
     </div>
 
     <script>
-            $( document ).ready(function() {
+ $( document ).ready(function() {
+    const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const id = urlParams.get('id')
+        if (id) {
+            var jsonData = JSON.parse('{{ session["patientdata"] | tojson | safe }}');
+            console.log(jsonData);
+            sessionStorage.setItem('pat_det', JSON.stringify(jsonData));
+
+        }
+        
+       // var x = JSON.parse('{{ appointments | tojson | safe }}');
+
                 let test = sessionStorage.getItem("pat_det");
+                console.log("test",test);
                 let json_data = JSON.stringify(test);
                 var data = JSON.parse(json_data); 
                 const newdata = JSON.parse(data); 
+                console.log("newdata",newdata);
                     //display data
-                    //populate('#patientDetail', $.parseJSON(json_data));
-                    const { elements } = document.querySelector('#patientDetail')
-
-                    for (const [ key, value ] of Object.entries(newdata) ) {
-                    const field = elements.namedItem(key)
-                    field && (field.value = value)
-                    }
-
+                    populate('#maintbl', newdata[0]) 
+                    
                     $("#addpatient").click(function () {
                 $('#myModal').modal().one('shown.bs.modal', function (e) {
                     $("#savethepatient").off("click").on("click", function (e) {
-                        console.log("inn")
                         var instance = $('#detailform').parsley();
                         instance.validate()
                         if (instance.isValid()) {
@@ -374,15 +382,16 @@
 
                     })
                 })
+                
         })  
 
             });
 
 
             function populate(frm, data) {
-            $.each(data, function(key, value){
-                $('[name='+key+']', frm).val(value);
-            });
+                $.each(data, function(key, value){
+                    $('[name='+key+']', frm).val(value);
+                });
             }
 
             
@@ -391,7 +400,7 @@
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const id = urlParams.get('id')
-
+     
         var data = JSON.stringify($('form').serializeJSON());
         console.log(data);
         
@@ -429,39 +438,43 @@
 </body>
    <!-- =============== VENDOR SCRIPTS ===============-->
    <!-- MODERNIZR-->
-   <script src="static/vendor/modernizr/modernizr.custom.js"></script>
+   <script src="/static/vendor/modernizr/modernizr.custom.js"></script>
    <!-- JQUERY-->
-   <script src="static/vendor/jquery/dist/jquery.js"></script>
+   <script src="/static/vendor/jquery/dist/jquery.js"></script>
    <!-- BOOTSTRAP-->
-   <script src="static/vendor/bootstrap/dist/js/bootstrap.js"></script>
-    <script src="static/vendor/datatables/media/js/jquery.dataTables.min.js"></script>
-   <script src="static/vendor/datatables-colvis/js/dataTables.colVis.js"></script>
-   <script src="static/vendor/datatables/media/js/dataTables.bootstrap.js"></script>
-   <script src="static/vendor/serialize/jquery.serializejson.js"></script>
+   <script src="/static/vendor/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="/static/vendor/datatables/media/js/jquery.dataTables.min.js"></script>
+   <script src="/static/vendor/datatables-colvis/js/dataTables.colVis.js"></script>
+   <script src="/static/vendor/datatables/media/js/dataTables.bootstrap.js"></script>
+   <script src="/static/vendor/serialize/jquery.serializejson.js"></script>
    <!-- STORAGE API-->
-   <script src="static/vendor/jQuery-Storage-API/jquery.storageapi.js"></script>
+   <script src="/static/vendor/jQuery-Storage-API/jquery.storageapi.js"></script>
    <!-- JQUERY EASING-->
-   <script src="static/vendor/jquery.easing/js/jquery.easing.js"></script>
+   <script src="/static/vendor/jquery.easing/js/jquery.easing.js"></script>
    <!-- ANIMO-->
-   <script src="static/vendor/animo.js/animo.js"></script>
-    <script src="static/vendor/parsley/parsley.min.js"></script>
-       <script src="static/vendor/sweetalert/dist/sweetalert.min.js"></script>
+   <script src="/static/vendor/animo.js/animo.js"></script>
+    <script src="/static/vendor/parsley/parsley.min.js"></script>
+       <script src="/static/vendor/sweetalert/dist/sweetalert.min.js"></script>
    <!-- LOCALIZE-->
-   <script src="static/vendor/jquery-localize-i18n/dist/jquery.localize.js"></script>
+   <script src="/static/vendor/jquery-localize-i18n/dist/jquery.localize.js"></script>
    <script src="/static/vendor/datepicker/build/js/bootstrap-datetimepicker.min.js"></script> 
    <!-- =============== PAGE VENDOR SCRIPTS ===============-->
    <!-- =============== APP SCRIPTS ===============-->
 
-   <script src="static/app/js/app.js"></script>
+   <script src="/static/app/js/app.js"></script>
 
 
 <script>
     $(document).ready(function () {
 
-        var s = document.createElement("script");
-    s.type = "text/javascript";
-    s.src = "/static/js/appointmentpatientform.js";
-    $("head").append(s);
+        const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const patienid = urlParams.get('id')
+
+            var s = document.createElement("script");
+        s.type = "text/javascript";
+        s.src = "/static/js/appointmentpatientform.js";
+        $("head").append(s);
 
             let removefiles = document.querySelectorAll("#removefile_button");
                 removefiles.forEach(btn => {
@@ -522,12 +535,12 @@
      }
     
  
-     function openmedicalnote(noteid,patienid){               
+        function openmedicalnote(noteid,patienid){               
          window.open('/medicalnote?id='+patienid+"&noteid="+noteid); 
          return false;
      }
       
-    async function Remove_file(event){  
+        async function Remove_file(event){  
             //let folderid = document.querySelector("[name = 'folderid']").value;
             let id = document.querySelector("[name = 'pat_id']").value;
             let userid = document.querySelector("[name = 'userid']").value;
@@ -563,7 +576,7 @@
 
         }
 
-   function HandleRemove_file(event) {
+        function HandleRemove_file(event) {
         Remove_file(event).then((json) => {
                 // handle success
                 console.log("Remove_file- success",json);
@@ -574,6 +587,10 @@
         }
 
             $("#addpatient").click(function () {
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+                const patienid = urlParams.get('id')
+
                 $('#myModal').modal().one('shown.bs.modal', function (e) {
                     $("#savethepatient").off("click").on("click", function (e) {
                         console.log("inn")
@@ -587,9 +604,11 @@
                     })
 
                 })
-            })
+
+            })                
     });
  
+
  </script>
 
 </html>

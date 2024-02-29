@@ -523,13 +523,13 @@ def patient_folder_Load():
         med = Medicalnote()
         mednote = med.get(noteid)
     pat_id = data['id']
+    print("pat_id",pat_id)
     apps = Appointments()
-    appointments = apps.getappointmentsbypatient(pat_id) 
-    print(appointments)    
+    appointments = apps.getappointmentsbypatient(pat_id)    
     notes = Medicalnotes()
     pat_mednotes = notes.getnotebypatient(pat_id)
     length = len(pat_mednotes)
-    
+
     for i in range(length):
         # GET ONLY TEXT from DB
         test= pat_mednotes[i]['body']
@@ -541,6 +541,8 @@ def patient_folder_Load():
         text_list = [tag.get_text() for tag in soup.find_all('div')]
         text_with_separators = ','.join(text_list)
         pat_mednotes[i]["text"]=text_with_separators   
+    print("appointments:",appointments)
+    session['patientdata'] = patientdata
     return render_template('patientform.html',user=user,patientdata=patientdata,appointments=appointments,pat_mednotes=pat_mednotes,tasksfiles=tasksfiles, alert="")
 
 @app.route("/patientform", methods=["POST"])

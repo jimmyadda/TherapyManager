@@ -3,6 +3,12 @@ $(document).ready(function () {
     const urlParams = new URLSearchParams(queryString);
     const patienid = urlParams.get('id')
 
+// Filter objects by name using jQuery
+    function filterBypatid2(array, id) {
+        return $.grep(array, function(obj) {
+            return obj.pat_id === id;
+        });
+    };
 
     var table
  
@@ -77,6 +83,9 @@ swal({
     }
 
     function getAppointment() {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        var patid = urlParams.get('id');
 
         var settings = {
             "async": true,
@@ -90,6 +99,9 @@ swal({
 
         $.ajax(settings).done(function (response) {
 
+        //filter response' by pat_id
+         response =  filterByPatid2(response,patid);
+         console.log(response)
         for(i=0;i<response.length;i++){
         response[i].pat_fullname=response[i].pat_first_name+" "+response[i].pat_last_name
         response[i].doc_fullname=response[i].doc_first_name+" "+response[i].doc_last_name
@@ -139,7 +151,10 @@ swal({
     $("#doctor_select").html(doctorSelect)
      $("#patient_select").html(patientSelect)
 
-      $(".form_datetime").datetimepicker({
+     console.log("open modal",patienid)
+     $("#patient_select").val(patienid); 
+     
+     $(".form_datetime").datetimepicker({
          format: 'yyyy-mm-dd hh:ii:00',
          startDate:new Date(),
         initialDate: new Date()
@@ -195,7 +210,7 @@ var patientSelect=""
         var settings = {
             "async": true,
             "crossDomain": true,
-            "url": "patientapi?id"+ patienid,
+            "url": "patientapi?id="+ patienid,
             "method": "GET",
             "headers": {
                 "cache-control": "no-cache"
@@ -214,6 +229,14 @@ var patientSelect=""
 getDoctor()
 getPatient(patienid)
 getAppointment()
+
+
+// Function to filter objects by name
+async function filterByPatid(array, patid) {
+    return array.filter(function(obj) {
+        return obj.pat_id === patid;
+    });
+}
 
 
 })

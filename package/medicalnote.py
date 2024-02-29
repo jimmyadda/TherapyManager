@@ -14,7 +14,7 @@ class Medicalnotes(Resource):
 
     def getnotebypatient(self,patid):
         """Retrive list of all the Medicalnote"""
-        patmedicalnotes = conn.execute("SELECT p.*,m.* from medrecords m LEFT JOIN patient p ON m.pat_id = p.pat_id where m.pat_id = ? ORDER BY m.create_date DESC", (patid,)).fetchall()
+        patmedicalnotes = conn.execute("SELECT p.*,m.* from medrecords m LEFT JOIN patient p ON m.pat_id = p.pat_id where m.pat_id = ? ORDER BY m.create_date DESC", (patid,)).fetchall()        
         return patmedicalnotes 
 
     def post(self):
