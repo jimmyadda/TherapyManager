@@ -425,6 +425,7 @@ def send_appointment(notification=''):
                 <b></b><br>
                 {note}
                 </div>
+                <!-- Button code -->
                 ''' 
             # Email data
     email_data = {
@@ -435,6 +436,7 @@ def send_appointment(notification=''):
             }          
 
     email_content = email_body.format(**email_data)
+    print(email_content)
     #email_content += f"<br><p><a href={task_url}>Go to Task</a></p>"
     # Create MIME message
     message = MIMEMultipart()

@@ -13,6 +13,7 @@ $(document).ready(function () {
     var table
  
     function addAppointment(data) {
+        var table
        console.log(data);
         var settings = {
             "async": true,
@@ -30,7 +31,7 @@ $(document).ready(function () {
         $.ajax(settings).done(function (response) {
          $.notify("Appointment Added Successfully", {"status":"success"});
             $('.modal.in').modal('hide')
-            table.destroy();
+            //table.destroy();
             $('#datatable5 tbody').empty(); // empty in case the columns change   
              
             //send mail 
@@ -38,7 +39,7 @@ $(document).ready(function () {
             f.append("id",data.pat_id)
             f.append("doc_id",data.doc_id)
             f.append("appointment_date",data.appointment_date)
-
+            console.log('email')
             fetch("/send-mail",{
             "method": "POST",
             "body":f,       

@@ -13,14 +13,6 @@
             </div>
         </div>
 
-        <div class="items">
-          {% for appointment in appointments %}
-                  <div id="app_title" class="itempreviewheader">{{ appointment['pat_first_name'] }} {{ appointment['pat_last_name'] }}</div>
-                  <div class="itempreviewtime">{{ appointment['appointment_date'] }}</div>
-                  <div class="itempreviewtime">{{ appointment['appointment_date'] }}</div>
-          {% endfor %}
-      </div>
-
         <form method="POST" action="/calendar" enctype="multipart/form-data">
             <div id="calendar"></div>   
         </form>
@@ -29,7 +21,8 @@
   var calendarInstance1 = new calendarJs( "calendar", {
     manualEditingEnabled: true,
     startOfWeekDay: 6, // 6 = Sunday
-    reverseOrderDaysOfWeek: true
+    reverseOrderDaysOfWeek: true,
+    _element_View_FullWeek:true
     // All your options can be set here
   } );
 

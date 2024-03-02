@@ -84,7 +84,8 @@
                 <div class="pull-right">
                   <div class="btn-group">
                      <button  style="bottom: 27px;" id="addpatient" class="mb-sm btn btn-primary" type="button">Book Appointment</button>
-
+                     &nbsp;&nbsp;
+                     <button  style="bottom: 27px; margin-left: 70px; " id="viewcalendar" onclick="gotoCalendar()" class="mb-sm btn btn-primary" type="button">Calendar View</button>
                   </div>
                </div>
             </div>
@@ -195,5 +196,12 @@
    <script src="/static/app/js/app.js"></script>
 <script src="/static/js/appointment.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<script>
+   function gotoCalendar(){
+      window.open('/calendar'); 
+         return false;
+   }
+</script>
 </body>
 </html>
