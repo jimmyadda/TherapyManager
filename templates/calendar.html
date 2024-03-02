@@ -22,7 +22,6 @@
     manualEditingEnabled: true,
     startOfWeekDay: 6, // 6 = Sunday
     reverseOrderDaysOfWeek: true,
-    _element_View_FullWeek:true
     // All your options can be set here
   } );
 
@@ -38,6 +37,8 @@
 
   calendarInstance1.addEvents(events_data);
 
+  //open full week view
+  document.getElementsByClassName("ib-hamburger-side")[0].click() 
 </script>
 
 </html>

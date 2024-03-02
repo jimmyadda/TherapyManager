@@ -184,7 +184,20 @@ def login_request():
         logger.info(f"Login Failed - '{form['userid']}'  date: {str(datetime.now())}")
         return render_template('/login.html',alert = "Invalid user/password. please try again.")
 
+#login to user portal
+# @app.route("/clientlogin", methods=['POST'])
+# def clientlogin_request():
+#     form = dict(request.values)
+#     users = database_read("select * from patient where pat_email=:email",form)
 
+#     if len(users) == 1: #user name exist, password not checked
+#         user = load_user(form['pat_id'])
+#         logger.info(f"Login successfull - '{form['userid']}'  date: {str(datetime.now())}")
+#         flask_login.login_user(user)
+#         return redirect('/')
+#     else: #Invalid Email 
+#            return render_template('/login.html',alert = "Invalid Email. please try again.") 
+    
 @app.route("/logout")
 @flask_login.login_required
 def logout_page():
