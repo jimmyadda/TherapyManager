@@ -17,3 +17,4 @@ class Common(Resource):
         getPatientCount.update(getDoctorCount)
         getPatientCount.update(getAppointmentCount)
         return getPatientCount
+    

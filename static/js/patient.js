@@ -120,6 +120,9 @@ swal({
                         mData: 'pat_insurance_no'
                     },
                     {
+                        mData: 'pat_dob'
+                    },
+                    {
                         mData: 'pat_address'
                     },
                     {
@@ -246,6 +249,9 @@ function getPatientById(pat_id) {
                 },
                 {
                     mData: 'pat_insurance_no'
+                },
+                {
+                    mData: 'pat_dob'
                 },
                 {
                     mData: 'pat_address'

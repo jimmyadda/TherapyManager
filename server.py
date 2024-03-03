@@ -1,5 +1,7 @@
 import base64
 from collections import defaultdict
+from email import encoders
+from email.mime.base import MIMEBase
 import pathlib
 from bs4 import BeautifulSoup
 import smtplib
@@ -11,7 +13,7 @@ from time import sleep
 from flask import Flask, send_file,flash,render_template,request,redirect, send_from_directory, session
 import flask_login
 import sqlite3
-from datetime import datetime
+import datetime
 import uuid
 import hashlib
 from werkzeug.utils import secure_filename
@@ -25,6 +27,7 @@ from package.medicalnote import Medicalnote,Medicalnotes
 from flask_mail import Mail, Message
 from create_account import create_account
 from mail import send_notification
+from package.Myutils import render_ics
 import json
 
 
@@ -421,13 +424,26 @@ def send_appointment(notification=''):
     pat_email = pat_data[0]['pat_email']
     doc_fullname = doc_data[0]['doc_first_name']+" " + doc_data[0]['doc_last_name'] 
     pat_fullname = pat_data[0]['pat_first_name']+" "+pat_data[0]['pat_last_name']
-
+    doc_address = doc_data[0]['doc_address']
     #gmail_url = add Appointment to calendar
     subject = "פגישת טיפול עם  : " + doc_fullname
     sender_email= str(mail_settings['MAIL_USERNAME'])
     receiver_email = pat_email
     #Build Msg
     # Email content
+
+    appointmentDuration = data['appointment_date']
+    print(appointmentDuration)
+    format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    Varformat = "%Y-%m-%d %H:%M:%S"
+    
+    #print(appointmentDuration.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    date_obj = datetime.datetime.strptime(appointmentDuration, Varformat)
+    time_change = datetime.timedelta(minutes=75) 
+    appointmentEnd = date_obj + time_change 
+    print(date_obj,appointmentEnd) 
+   
+    
     notification = 'נשמח לראותך '
     email_body = '''
                 <div id='App_mail' style="text-align: right;direction: rtl;" >
@@ -449,19 +465,44 @@ def send_appointment(notification=''):
             }          
 
     email_content = email_body.format(**email_data)
-    print(email_content)
-    #email_content += f"<br><p><a href={task_url}>Go to Task</a></p>"
+
+    desc = '''
+        רציתי ליצור קשר כדי לקבוע את פגישת הטיפול הבאה שלנו ולהמשיך את עבודתנו יחד במסע הרווחה הרגשית.
+        בנוסף, אם יש נושאים או תחומים ספציפיים שבהם תרצה להתמקד במהלך הפגישה הבאה שלנו
+        , אנא אל תהסס ליידע אותי. ההשקעה שלך חשובה, ואני רוצה להבטיח שהמפגשים שלנו יהיו מותאמים לצרכים ולמטרות שלך.
+        אני מחכה בקוצר רוח לפגישה הבאה שלנו ולהמשך עבודתנו המשותפת. בינתיים, אם יש לך שאלות או חששות, אנא אל תהסס לפנות.
+         בברכה ,  קארין עדה
+        '''
+    desc = u'פגישת טיפול'
     # Create MIME message
-    message = MIMEMultipart()
+    ics = render_ics(
+            title=u'פגישת טיפול',
+            description= desc,
+            location= doc_address,
+            start= date_obj,
+            end= appointmentEnd,
+            created=None,
+            admin='Karin Adda',
+            admin_mail=sender_email
+        )
+    
+    message = MIMEMultipart()    
     message['From'] = sender_email
     message['To'] = receiver_email    
     message['Subject'] = str(subject)
-    message.attach(MIMEText(email_content, 'html',_charset='utf-8'))
+    message.attach(MIMEText(email_content,'text/calendar',_charset='utf-8'))    
+    #calendar
+    attachment = MIMEBase('text', 'calendar; name=calendar.ics; method=REQUEST; charset=UTF-8')
+    attachment.set_payload(ics.encode('utf-8'))
+    encoders.encode_base64(attachment)
+    attachment.add_header('Content-Disposition', 'attachment; filename=%s' % "calendar.ics")
 
+    message.attach(attachment)
     # Connect to the SMTP server and send the email
     with smtplib.SMTP(mail_settings['MAIL_SERVER'], 587) as server:
         server.starttls()
         server.login(mail_settings['MAIL_USERNAME'], mail_settings['MAIL_PASSWORD'])
+        
         server.sendmail(sender_email, receiver_email, message.as_string().encode("UTF-8"))
         server.close()
     print('Email sent!')
