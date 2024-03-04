@@ -22,7 +22,7 @@ from package.patient import Patients, Patient
 from package.doctor import Doctors, Doctor
 from package.appointment import Appointments, Appointment
 from package.common import Common
-from package.User import User
+from package.User import User,ClientUser
 from package.medicalnote import Medicalnote,Medicalnotes
 from flask_mail import Mail, Message
 from create_account import create_account
@@ -34,7 +34,7 @@ import json
 app = Flask(__name__)
 
 api = Api(app)
-# Routes
+# Routes API
 api.add_resource(Patients, '/patientapi')
 api.add_resource(Patient, '/patientapi/<int:id>')
 api.add_resource(Doctors, '/doctorapi')
@@ -75,16 +75,26 @@ login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
 
-
+#region Main App
 
 @login_manager.user_loader
 def load_user(userid):
-    users = database_read(f"select  * from accounts where userid='{userid}';")
+    users = database_read(f"select * from accounts where userid='{userid}';")
     if len(users)!=1:
         return None
     else:
         user = User(users[0]['userid'],users[0]['email'],users[0]['name'])
         user.id = userid
+        return user
+
+@login_manager.user_loader
+def load_clientuser(pat_id):
+    users = database_read(f"select * from patient where pat_id='{pat_id}';")
+    if len(users)!=1:
+        return None
+    else:
+        user = ClientUser(users[0]['pat_id'],users[0]['pat_email'],users[0]['pat_first_name'])
+        user.id = pat_id
         return user
 
 def database_write(sql,data=None):
@@ -117,7 +127,6 @@ def database_read(sql,data=None):
     db.close()
     connection.close()
     return rows
-
 
 @app.route("/")
 def index_page():
@@ -160,7 +169,6 @@ def registration_request():
     else:
          return render_template('/register.html',alert = "Please insert valid email to register!")
 
-
 @app.route("/login", methods=['GET'])
 def login_page():
     return render_template('login.html',alert ="")
@@ -177,43 +185,21 @@ def login_request():
 
         if saved_key == generated_key: #password match
             user = load_user(form['userid'])
-            logger.info(f"Login successfull - '{form['userid']}'  date: {str(datetime.now())}")
+            logger.info(f"Login successfull - '{form['userid']}'  date: {str(datetime.datetime.now())}")
             flask_login.login_user(user)
             return redirect('/')
         else: #password incorrect
-           logger.info(f"Login Failed - '{form['userid']}'  date: {str(datetime.now())}")
+           logger.info(f"Login Failed - '{form['userid']}'  date: {str(datetime.datetime.now())}")
            return render_template('/login.html',alert = "Invalid user/password. please try again.") 
     else: #user name does not exist
-        logger.info(f"Login Failed - '{form['userid']}'  date: {str(datetime.now())}")
+        logger.info(f"Login Failed - '{form['userid']}'  date: {str(datetime.datetime.now())}")
         return render_template('/login.html',alert = "Invalid user/password. please try again.")
-
-#login to user portal
-# @app.route("/clientlogin", methods=['POST'])
-# def clientlogin_request():
-#     form = dict(request.values)
-#     users = database_read("select * from patient where pat_email=:email",form)
-
-#     if len(users) == 1: #user name exist, password not checked
-#         user = load_user(form['pat_id'])
-#         logger.info(f"Login successfull - '{form['userid']}'  date: {str(datetime.now())}")
-#         flask_login.login_user(user)
-#         return redirect('/')
-#     else: #Invalid Email 
-#            return render_template('/login.html',alert = "Invalid Email. please try again.") 
     
 @app.route("/logout")
 @flask_login.login_required
 def logout_page():
     flask_login.logout_user()
     return redirect("/")
-
-@app.route("/calendar")
-@flask_login.login_required
-def calendar_page():
-    user = flask_login.current_user.get_dict()
-    apps = Appointments()
-    appointments = apps.get() 
-    return render_template('calendar.html',user=user,appointments=appointments)
 
 @app.route("/main")
 @flask_login.login_required
@@ -253,21 +239,21 @@ def task_update():
         form['status']= 'CLOSE'  #status open or close
         change_in_task= "Task was Closed"
         #Log
-        logger.info(f"Task '{id}' has been closed by: {user['userid']} date: {str(datetime.now())}")
+        logger.info(f"Task '{id}' has been closed by: {user['userid']} date: {str(datetime.datetime.now())}")
         #sendmail
         ok = send_notification(change_in_task) 
     if 'submit-reopen' in form:
         form['status']= 'OPEN'  #status open or close
         change_in_task= "Task was Reopened"
         #Log
-        logger.info(f"Task '{id}' has been Reopened by: {user['userid']} date: {str(datetime.now())}")
+        logger.info(f"Task '{id}' has been Reopened by: {user['userid']} date: {str(datetime.datetime.now())}")
         #sendmail
         ok = send_notification(change_in_task)         
     if 'submit-delete' in form:
         database_write(f"delete from tasks where id='{id}';")
         change_in_task= "Task was Deleted"
         #Log
-        logger.info(f"Task '{id}' has been delete by: {user['userid']} date: {str(datetime.now())}")
+        logger.info(f"Task '{id}' has been delete by: {user['userid']} date: {str(datetime.datetime.now())}")
         #mail
         ok = send_notification(change_in_task) 
         return redirect(f"/main?folderid={folderid}")
@@ -275,7 +261,7 @@ def task_update():
         id = str(uuid.uuid1())
         form['id'] = id
         form['status'] = 'OPEN'
-        form['created'] = datetime.now().strftime("%Y-%m-%d")
+        form['created'] = datetime.datetime.now().strftime("%Y-%m-%d")
         sql = """insert into tasks 
         (userid,folderid,id,title,due,reminder,created,category,priority,status,desc,assignto) values 
         (:userid,:folderid,:id,:title,:due,:reminder,:created,:category,:priority,:status,:desc,:assignto);"""
@@ -292,7 +278,7 @@ def task_update():
            ## SEND Notification mail'##
            if maintask[0].get('assignto') != form.get('assignto'):
              #Log
-            logger.info(f"Task : '{form['id']}' is now assinged to: {form.get('assignto')}  by: {user['userid']} date: {str(datetime.now())}")
+            logger.info(f"Task : '{form['id']}' is now assinged to: {form.get('assignto')}  by: {user['userid']} date: {str(datetime.datetime.now())}")
             #send Email
             session['formData'] = form
             assinged_notif = f"Task : '{form['id']}' was now assinged to: {form.get('assignto')}  by: {user['userid']}"
@@ -306,6 +292,21 @@ def task_update():
         else:
             return redirect(f"/error?folderid={folderid}&id={id}") 
     return "ok"
+#endregion
+
+#General Routes
+#region General Route
+@app.route("/error")
+def error_page():
+    return "there was an Error"
+
+@app.route("/calendar")
+@flask_login.login_required
+def calendar_page():
+    user = flask_login.current_user.get_dict()
+    apps = Appointments()
+    appointments = apps.get() 
+    return render_template('calendar.html',user=user,appointments=appointments)
 
 @app.route("/new-folder", methods=["POST"])
 @flask_login.login_required
@@ -337,7 +338,7 @@ def upload():
         if file :                            
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            create = datetime.now().strftime("%Y-%m-%d")
+            create = datetime.datetime.now().strftime("%Y-%m-%d")
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             sql = f"INSERT into Patientfiles (pat_id,filename,filepath,createdate,userid) VALUES ('{id}','{filename}','{filepath}','{create}','{user['userid']}');"
             ok = database_write(sql,data)
@@ -409,7 +410,7 @@ def delete_folder():
     if ok == 1:
         print('project successfully Deleted')
         #Log
-        logger.info(f"Project deleted - '{data['foldername']}' has been Sent by: {user['userid']} date: {str(datetime.now())}")
+        logger.info(f"Project deleted - '{data['foldername']}' has been Sent by: {user['userid']} date: {str(datetime.datetime.now())}")
         return "OK"            
     else:
         return "ERROR" 
@@ -466,18 +467,23 @@ def send_appointment(notification=''):
 
     email_content = email_body.format(**email_data)
 
-    desc = '''
-        רציתי ליצור קשר כדי לקבוע את פגישת הטיפול הבאה שלנו ולהמשיך את עבודתנו יחד במסע הרווחה הרגשית.
-        בנוסף, אם יש נושאים או תחומים ספציפיים שבהם תרצה להתמקד במהלך הפגישה הבאה שלנו
-        , אנא אל תהסס ליידע אותי. ההשקעה שלך חשובה, ואני רוצה להבטיח שהמפגשים שלנו יהיו מותאמים לצרכים ולמטרות שלך.
-        אני מחכה בקוצר רוח לפגישה הבאה שלנו ולהמשך עבודתנו המשותפת. בינתיים, אם יש לך שאלות או חששות, אנא אל תהסס לפנות.
-         בברכה ,  קארין עדה
-        '''
+    # desc = """רציתי ליצור קשר כדי לקבוע את פגישת הטיפול הבאה שלנו,
+    # להמשיך את עבודתנו יחד במסע הרווחה הרגשית.
+    # בנוסף, אם יש נושאים או תחומים ספציפיים שבהם תרצה להתמקד במהלך הפגישה הבאה שלנו,
+    # אנא אל תהסס ליידע אותי. ההשקעה שלך חשובה,
+    #   אני רוצה להבטיח שהמפגשים שלנו יהיו מותאמים לצרכים ולמטרות שלך.
+    # אני מחכה בקוצר רוח לפגישה הבאה שלנו.
+    # להמשך עבודתנו המשותפת.בינתיים,
+    #   אם יש לך שאלות או חששות,
+    #   אנא אל תהסס לפנות.בברכה ,
+    #   קארין עדה"""
+
     desc = u'פגישת טיפול'
+
     # Create MIME message
     ics = render_ics(
             title=u'פגישת טיפול',
-            description= desc,
+            description=desc,
             location= doc_address,
             start= date_obj,
             end= appointmentEnd,
@@ -485,7 +491,8 @@ def send_appointment(notification=''):
             admin='Karin Adda',
             admin_mail=sender_email
         )
-    
+    print(ics)
+
     message = MIMEMultipart()    
     message['From'] = sender_email
     message['To'] = receiver_email    
@@ -507,39 +514,10 @@ def send_appointment(notification=''):
         server.close()
     print('Email sent!')
     return redirect(f"/appointment")
+#endregion
 
-@app.route("/new-note", methods=["POST"])
-@flask_login.login_required
-def create_new_note():
-    user = flask_login.current_user.get_dict() 
-    data = dict(request.values)
-    folderid = data['folderid']
-    create = datetime.now().strftime("%Y-%m-%d")
-    id = data['id']
-    add_note =  data['note']
-    sql = f"INSERT into TasksNotes (id,note,createdate,userid) VALUES ('{id}','{add_note}','{create}','{user['userid']}');"
-    ok = database_write(sql,data)
-    if ok == 1:
-       #Log
-       logger.info(f"New Note To Task '{id}' has been Added by: {user['userid']} date: {str(datetime.now())}")
-       #mail
-       notif_sent = send_notification(add_note) 
-       if notif_sent:
-            return redirect(f"/main?folderid={folderid}&id={id}") 
-       else:
-            return redirect(f"/error?folderid={folderid}&id={id}") 
-       
-       return "ERROR"
-
-@app.route("/mytasks", methods=['GET'])
-def mytask_page():
-    id = request.args.get('id')
-    user = flask_login.current_user.get_dict()
-    mytasks = database_read(f"select ts.*,fol.name as foldername from tasks as ts left join folders as fol on ts.folderid = fol.id where assignto= '{user['name']}'")
-    closedtasks = database_read(f"select ts.*,fol.name as foldername from tasks as ts left join folders as fol on ts.folderid = fol.id where  status = 'CLOSE';")
-    print(closedtasks)
-    return render_template('mytasks.html',mytasks=mytasks,closedtasks=closedtasks)
-
+#Therapy Routes
+#region Therapy Routes
 @app.route("/doctor", methods=['GET'])
 def doctor_Page():
     id = request.args.get('id')
@@ -685,7 +663,7 @@ def updatemedicalnote():
         noteid = request.values['noteid']
         #update
         print("update:", noteid)
-        now = datetime.now().strftime("%Y-%m-%d")
+        now = datetime.datetime.now().strftime("%Y-%m-%d")
         sql = f"update medrecords SET pat_id= '{id}', create_date= '{now}' ,body = '{contentbdy}' where rec_id = '{noteid}';"
         ok = database_write(sql,data)
         if ok == 1:
@@ -695,19 +673,54 @@ def updatemedicalnote():
     else:
         #New 
         print("insert:", id)   
-        now = datetime.now().strftime("%Y-%m-%d")
+        now = datetime.datetime.now().strftime("%Y-%m-%d")
         sql = f"INSERT into medrecords (pat_id,create_date,body) VALUES  ('{id}','{now}','{contentbdy}');"
         ok = database_write(sql,data)
         if ok == 1:
             return render_template('medicalnote.html',user=user,data=data)
         else:
             return "ERROR"
+#endregion
+
+#region Clients Routes
+        
+@app.route("/clients/client_login", methods=['GET'])
+def clientlogin_page():
+    return render_template('/clientlogin.html',alert = "")      
+
+@app.route("/clients/client_login", methods=['POST'])
+def clientlogin_request():
+    form = dict(request.values)
+    users = database_read("select * from patient where pat_email=:pat_mail and pat_insurance_no=:pat_id",form)
+    print('users',users[0]['pat_id'])
+    clientid= users[0]['pat_id']
+    if len(users) >= 1: #user name exist, password not checked
+        user = load_clientuser(users[0]['pat_id'])
+        print("user",user)
+        flask_login.login_user(user)  
+        return redirect(f"/portal?patid={clientid}") 
+    else: #Invalid Email 
+           return render_template('/clientlogin.html',alert = "Invalid Email. please try again.")      
     
+@app.route("/portal",methods=["GET"])
+def get_portal():
+    appointment_dates= {}
+    id = request.args.get('patid')
+    user = flask_login.current_user.get_dict()
+    patientdata = database_read(f"select * from patient where pat_id= '{id}';")
+    lastappointment = database_read(f"SELECT *  FROM appointment where pat_id='{id}' and appointment_date < DATETIME('now') order by appointment_date desc LIMIT 1;")
+    nextappointment = database_read(f"SELECT *  FROM appointment where pat_id='{id}' and appointment_date >= DATETIME('now') order by appointment_date  asc LIMIT 1;")
+    if lastappointment:
+        appointment_dates["lastappointment"] = lastappointment[0]["appointment_date"]
+    if nextappointment:
+        appointment_dates["nextappointment"] = nextappointment[0]["appointment_date"]
+    print(appointment_dates)
+    apps = Appointments()
+    appointments = apps.getappointmentsbypatient(id)
+    return render_template('portal.html',user=user,patientdata=patientdata,appointments=appointments,appointment_dates=appointment_dates,alert="")
 
+#endregion
 
-@app.route("/error")
-def error_page():
-    return "there was an Error"
 
 
 #dev 
