@@ -40,7 +40,7 @@ class Patient(Resource):
     def get(self,id):
         """api to retrive details of the patient by it id"""
 
-        patient = conn.execute("SELECT * FROM patient WHERE pat_id=?",(id,)).fetchall()
+        patient = conn.execute("SELECT * FROM patient WHERE pat_id=?",(id,)).fetchone()
         return patient
 
     def delete(self,id):

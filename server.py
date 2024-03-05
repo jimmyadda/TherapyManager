@@ -20,9 +20,10 @@ from werkzeug.utils import secure_filename
 from flask_restful import Resource, Api
 from package.patient import Patients, Patient
 from package.doctor import Doctors, Doctor
-from package.appointment import Appointments, Appointment
+from package.appointment import Appointments, Appointment,RequestAppointments,RequestAppointment
 from package.common import Common
-from package.User import User,ClientUser
+from package.User import User
+from package.client import ClientUser
 from package.medicalnote import Medicalnote,Medicalnotes
 from flask_mail import Mail, Message
 from create_account import create_account
@@ -37,10 +38,13 @@ api = Api(app)
 # Routes API
 api.add_resource(Patients, '/patientapi')
 api.add_resource(Patient, '/patientapi/<int:id>')
+
 api.add_resource(Doctors, '/doctorapi')
 api.add_resource(Doctor, '/doctorapi/<int:id>')
 api.add_resource(Appointments, '/appointmentapi')
 api.add_resource(Appointment, '/appointmentapi/<int:id>')
+api.add_resource(RequestAppointments, '/appointmentrequestapi')
+api.add_resource(RequestAppointment, '/appointmentrequestapi/<int:id>')
 api.add_resource(Medicalnotes, '/medicalnoteapi')
 api.add_resource(Medicalnote, '/medicalnoteapi/<int:id>')
 api.add_resource(Common, '/common') 
@@ -78,24 +82,20 @@ login_manager.init_app(app)
 #region Main App
 
 @login_manager.user_loader
-def load_user(userid):
+def load_user(userid):  #or client patid
     users = database_read(f"select * from accounts where userid='{userid}';")
-    if len(users)!=1:
-        return None
-    else:
+    client = database_read(f"select * from patient where pat_id='{userid}';")
+    
+    if len(users)==1:        
         user = User(users[0]['userid'],users[0]['email'],users[0]['name'])
+    else:
+        user = ClientUser(client[0]['pat_id'],client[0]['pat_email'],client[0]['pat_first_name'])
+    print("userloader", user)
+    if user:
         user.id = userid
         return user
-
-@login_manager.user_loader
-def load_clientuser(pat_id):
-    users = database_read(f"select * from patient where pat_id='{pat_id}';")
-    if len(users)!=1:
-        return None
     else:
-        user = ClientUser(users[0]['pat_id'],users[0]['pat_email'],users[0]['pat_first_name'])
-        user.id = pat_id
-        return user
+        return None
 
 def database_write(sql,data=None):
     connection = sqlite3.connect(database_filename)
@@ -129,8 +129,9 @@ def database_read(sql,data=None):
     return rows
 
 @app.route("/")
-def index_page():
+def index_page():    
     if flask_login.current_user.is_authenticated:
+        print("is_authenticated")
         logger.info(str(flask_login.current_user.get_dict()) + " Has Logged in")   
         user = flask_login.current_user.get_dict()
         apps = Appointments()
@@ -138,7 +139,6 @@ def index_page():
         return render_template('/index.html',user=user,appointments=appointments)
     else:
         return redirect("/login")
-
 
 @app.route("/register", methods=['GET'])
 def registration_page():
@@ -177,6 +177,8 @@ def login_page():
 def login_request():
     form = dict(request.values)
     users = database_read("select * from accounts where userid=:userid",form)
+    formid = form['userid']
+    print("formid",formid)
 
     if len(users) == 1: #user name exist, password not checked
         salt = users[0]['salt']
@@ -184,15 +186,15 @@ def login_request():
         generated_key = hashlib.pbkdf2_hmac('sha256',form['password'].encode('utf-8'),salt.encode('utf-8'),10000).hex()
 
         if saved_key == generated_key: #password match
-            user = load_user(form['userid'])
-            logger.info(f"Login successfull - '{form['userid']}'  date: {str(datetime.datetime.now())}")
+            user = load_user(formid)
+            logger.info(f"Login successfull - '{formid}'  date: {str(datetime.datetime.now())}")
             flask_login.login_user(user)
-            return redirect('/')
+            return redirect('/') 
         else: #password incorrect
-           logger.info(f"Login Failed - '{form['userid']}'  date: {str(datetime.datetime.now())}")
+           logger.info(f"Login Failed - '{formid}'  date: {str(datetime.datetime.now())}")
            return render_template('/login.html',alert = "Invalid user/password. please try again.") 
     else: #user name does not exist
-        logger.info(f"Login Failed - '{form['userid']}'  date: {str(datetime.datetime.now())}")
+        logger.info(f"Login Failed - '{formid}'  date: {str(datetime.datetime.now())}")
         return render_template('/login.html',alert = "Invalid user/password. please try again.")
     
 @app.route("/logout")
@@ -292,10 +294,12 @@ def task_update():
         else:
             return redirect(f"/error?folderid={folderid}&id={id}") 
     return "ok"
+
 #endregion
 
 #General Routes
 #region General Route
+
 @app.route("/error")
 def error_page():
     return "there was an Error"
@@ -695,7 +699,7 @@ def clientlogin_request():
     print('users',users[0]['pat_id'])
     clientid= users[0]['pat_id']
     if len(users) >= 1: #user name exist, password not checked
-        user = load_clientuser(users[0]['pat_id'])
+        user = load_user(users[0]['pat_id'])
         print("user",user)
         flask_login.login_user(user)  
         return redirect(f"/portal?patid={clientid}") 
@@ -703,6 +707,7 @@ def clientlogin_request():
            return render_template('/clientlogin.html',alert = "Invalid Email. please try again.")      
     
 @app.route("/portal",methods=["GET"])
+@flask_login.login_required
 def get_portal():
     appointment_dates= {}
     id = request.args.get('patid')
@@ -714,7 +719,7 @@ def get_portal():
         appointment_dates["lastappointment"] = lastappointment[0]["appointment_date"]
     if nextappointment:
         appointment_dates["nextappointment"] = nextappointment[0]["appointment_date"]
-    print(appointment_dates)
+    print(patientdata)
     apps = Appointments()
     appointments = apps.getappointmentsbypatient(id)
     return render_template('portal.html',user=user,patientdata=patientdata,appointments=appointments,appointment_dates=appointment_dates,alert="")

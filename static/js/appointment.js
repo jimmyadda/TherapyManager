@@ -73,6 +73,41 @@ swal({
 
     }
 
+
+    function approveAppointment(id) {
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "url": "appointmentapi/" + id,
+            "method": "DELETE",
+            "headers": {
+                "cache-control": "no-cache",
+                "postman-token": "28ea8360-5af0-1d11-e595-485a109760f2"
+            }
+        }
+
+swal({
+    title: "Are you sure?",
+    text: "You will not be able to recover this data",
+    type: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#DD6B55",
+    confirmButtonText: "Yes, delete it!",
+    closeOnConfirm: false
+}, function() {
+ $.ajax(settings).done(function (response) {
+   swal("Deleted!", "Appointment has been deleted.", "success");
+            table.destroy();
+            $('#datatable4 tbody').empty(); // empty in case the columns change
+            getAppointment()
+        });
+
+
+});
+
+    }
+    
+
     function getAppointment() {
 
         var settings = {
@@ -129,12 +164,68 @@ swal({
 
     }
 
+    
+    function getPendingAppointment() {
 
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "url": "RequestAppointments",
+            "method": "GET",
+            "headers": {
+                "cache-control": "no-cache"
+            }
+        }
+
+        $.ajax(settings).done(function (response) {
+
+        for(i=0;i<response.length;i++){
+        response[i].pat_fullname=response[i].pat_first_name+" "+response[i].pat_last_name
+        response[i].doc_fullname=response[i].doc_first_name+" "+response[i].doc_last_name
+        }
+
+
+
+            table = $('#pendingtbl').DataTable({
+                "bDestroy": true,
+                'paging': true, // Table pagination
+                'ordering': true, // Column ordering
+                'info': true, // Bottom left status text
+                aaData: response,
+                   "aaSorting": [],
+                aoColumns: [
+                    {
+                        mData: 'doc_fullname'
+                    },
+                    {
+                        mData: 'pat_fullname'
+                    },
+                    {
+                        mData: 'appointment_date'
+                    },
+                    {
+                        mRender: function (o) {
+                            return '<button class="btn-xs btn btn-danger delete-btn" type="button">approve</button>';
+                        }
+                    }
+        ]
+            });
+            $('#datatable4 tbody').on('click', '.delete-btn', function () {
+                var data = table.row($(this).parents('tr')).data();
+                approveAppointment(data.app_id)
+            });
+
+
+        });
+
+
+    }
+    
 
 
     $("#addpatient").click(function () {
 
-        $('#myModal').modal().one('shown.bs.modal', function (e) {
+    $('#myModal').modal().one('shown.bs.modal', function (e) {
 
     $("#doctor_select").html(doctorSelect)
      $("#patient_select").html(patientSelect)

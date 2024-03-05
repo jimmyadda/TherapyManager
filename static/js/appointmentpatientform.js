@@ -149,17 +149,17 @@ swal({
 
         $('#myModal').modal().one('shown.bs.modal', function (e) {
 
-    $("#doctor_select").html(doctorSelect)
-     $("#patient_select").html(patientSelect)
+        $("#doctor_select").html(doctorSelect)
+        $("#patient_select").html(patientSelect)
 
-     console.log("open modal",patienid)
-     $("#patient_select").val(patienid); 
+        console.log("open modal",patienid)
+        $("#patient_select").val(patienid); 
      
-     $(".form_datetime").datetimepicker({
-         format: 'yyyy-mm-dd hh:ii:00',
-         startDate:new Date(),
-        initialDate: new Date()
-    });
+        $(".form_datetime").datetimepicker({
+            format: 'yyyy-mm-dd hh:ii:00',
+            startDate:new Date(),
+            initialDate: new Date()
+        });
             $("#savethepatient").off("click").on("click", function(e) {
             var instance = $('#detailform').parsley();
             instance.validate()

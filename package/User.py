@@ -10,11 +10,5 @@ class User(flask_login.UserMixin):
     def get_dict(self):
         return{'userid': self.id,'email': self.email, 'name': self.name}
     
-class ClientUser(flask_login.UserMixin):
-    def __init__(self,pat_id,email,name):
-        self.email = email
-        self.name = name
-        self.id = pat_id
-    def get_dict(self):
-        return{'pat_id': self.id,'email': self.email, 'name': self.name}
+
     

@@ -383,7 +383,7 @@
                     //display data
                     populate('#maintbl', newdata[0]) 
                     
-                    $("#addpatient").click(function () {
+            $("#addpatient").click(function () {
                 $('#myModal').modal().one('shown.bs.modal', function (e) {
                     $("#savethepatient").off("click").on("click", function (e) {
                         var instance = $('#detailform').parsley();
@@ -393,10 +393,10 @@
                             addmedicalnote(jsondata)
                         }
 
+                        })
                     })
-                })
                 
-        })  
+                })  
 
             });
 
