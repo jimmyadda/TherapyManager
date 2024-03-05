@@ -523,6 +523,7 @@ def send_appointment(notification=''):
 #Therapy Routes
 #region Therapy Routes
 @app.route("/doctor", methods=['GET'])
+
 def doctor_Page():
     id = request.args.get('id')
     user = flask_login.current_user.get_dict()
