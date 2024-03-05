@@ -64,6 +64,6 @@ def admin_only(func):
             if is_admin:
                 return func(*args, **kws)
             else:
-                return 'This Page is For Admin only', 403
+                return "You don't have authorization to view this page - HTTP Error 403.", 403
 
     return decorated_function
