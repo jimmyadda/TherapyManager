@@ -58,7 +58,7 @@
              <!-- END navbar header-->
              <!-- START Nav wrapper-->
              <div class="nav-wrapper">
-                <a class="brand-logo"  style="right: 55px;position: absolute;color: white;font-size: 18px; padding: 5px;" href="/myprofile">hey, {{ user.name }} 
+                <a class="brand-logo"  style="right: 55px;position: absolute;color: white;font-size: 18px; padding: 5px;" href="/myprofile">hey,  {{ user.email }} 
                    
                 </a>
                    <span id="logout_button" >
@@ -136,8 +136,9 @@
                   <!-- 2 col  -->
                   <div class="content-wrapper">
                   <div class="row">
-                     <h3>Personal data</h3>
+                     
                   <div class="col-lg-6 col-md-6">
+                     <h3>Personal data</h3>
                        <!-- START widget-->     
                            <div class="panel widget bg-secondary">
                                  <div class="row">
@@ -166,6 +167,25 @@
                                  </div><!--end row-table -->                                                             
                            </div>
                   </div>
+                  
+                  {%if patfiles%}  
+                                                  
+                  <div class="col-lg-6 col-md-6">    
+                     <h3>My Files</h3>                  
+                       <!-- START widget-->                          
+                           <div class="panel widget bg-secondary">                                                            
+                              {% for patfile in patfiles %}    
+                              <div class="row">
+                                 <div class="m10 text-bold">
+                                    <label class="col-lg-4 control-label">File : </label>
+                                    <div class='filenames' name={{ patfile['filename'] }} id={{patfile['pat_id']}}>{{ patfile['filename'] }} </div>
+                                    <div><a id="openfile" href="/download_file/{{ patfile['filename'] }}" >View File</a> </div>                                  
+                                 </div>
+                              </div><!--end row-table -->
+                              {% endfor %}
+                           </div>
+                  </div>
+                  {%endif%}
                </div> <!-- end of Row -->
             </div> <!-- end of content-wrapper-->
 

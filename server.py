@@ -710,7 +710,7 @@ def clientlogin_request():
         flask_login.login_user(user)  
         return redirect(f"/portal?patid={clientid}") 
     else: #Invalid Email 
-           return render_template('/clientlogin.html',alert = "Invalid Email. please try again.")      
+           return render_template('/clientlogin.html',alert = "Invalid Email/ID Number. please try again.")      
     
 @app.route("/portal",methods=["GET"])
 @flask_login.login_required
@@ -721,6 +721,7 @@ def get_portal():
     patientdata = database_read(f"select * from patient where pat_id= '{id}';")
     lastappointment = database_read(f"SELECT *  FROM appointment where pat_id='{id}' and appointment_date < DATETIME('now') order by appointment_date desc LIMIT 1;")
     nextappointment = database_read(f"SELECT *  FROM appointment where pat_id='{id}' and appointment_date >= DATETIME('now') order by appointment_date  asc LIMIT 1;")
+    patfiles = database_read(f"select * from Patientfiles where pat_id= '{id}';") #id = pat_id
     if lastappointment:
         appointment_dates["lastappointment"] = lastappointment[0]["appointment_date"]
     if nextappointment:
@@ -728,7 +729,7 @@ def get_portal():
     apps = Appointments()
     appointments = apps.getappointmentsbypatient(id)
     session['patientdata'] = patientdata
-    return render_template('portal.html',user=user,patientdata=patientdata,appointments=appointments,appointment_dates=appointment_dates,alert="")
+    return render_template('portal.html',user=user,patientdata=patientdata,appointments=appointments,appointment_dates=appointment_dates,patfiles=patfiles,alert="")
 
 @app.route("/checkdate",methods=["POST"])
 @flask_login.login_required

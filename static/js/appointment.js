@@ -74,6 +74,8 @@ swal({
     }
 
     function getAppointment() {
+        var unavailableHours = [];
+        $('#unavailableHours').val(unavailableHours); 
 
         var settings = {
             "async": true,
@@ -88,11 +90,16 @@ swal({
         $.ajax(settings).done(function (response) {
 
         for(i=0;i<response.length;i++){
+        //set available hours
+        var indx  = unavailableHours.indexOf(response[i].appointment_date);
+        if (indx <=0){unavailableHours.push(response[i].appointment_date);}
+        
+
         response[i].pat_fullname=response[i].pat_first_name+" "+response[i].pat_last_name
         response[i].doc_fullname=response[i].doc_first_name+" "+response[i].doc_last_name
         }
 
-
+        $('#unavailableHours').val(unavailableHours); 
 
             table = $('#datatable4').DataTable({
                 "bDestroy": true,
@@ -133,7 +140,7 @@ swal({
  
  
     function getPendingAppointment() {
-
+        var unavailableHours = [];
         var settings = {
             "async": true,
             "crossDomain": true,
@@ -145,13 +152,18 @@ swal({
         }
 
         $.ajax(settings).done(function (response) {
-
+        
         for(i=0;i<response.length;i++){
+        //set available hours
+        var indx  = unavailableHours.indexOf(response[i].appointment_date);
+        if (indx <=0){unavailableHours.push(response[i].appointment_date);}
+
+
         response[i].pat_fullname=response[i].pat_first_name+" "+response[i].pat_last_name
         response[i].doc_fullname=response[i].doc_first_name+" "+response[i].doc_last_name
         }
 
-
+        $('#pendingunavailableHours').val(unavailableHours); 
 
             table = $('#pendingtbl').DataTable({
                 "bDestroy": true,
@@ -276,12 +288,26 @@ swal({
 
     $("#doctor_select").html(doctorSelect)
      $("#patient_select").html(patientSelect)
+       
 
       $(".form_datetime").datetimepicker({
          format: 'yyyy-mm-dd hh:ii:00',
-         startDate:new Date(),
-         initialDate: new Date()
+         minuteStep : 30,        
+         startDate: new Date(),
+         initialDate: new Date(),
+         onRenderDay: function(date) {
+          alert(date);
+        }
     });
+    $('#datepicker1').on('changeDate', function(event) {
+       var reqDate = $('#datepicker1').val()
+       //check date
+    });
+
+     //    $('#datepicker1').datetimepicker('setHoursDisabled', [0,1,2,3,4,5,6,7,18,19,20,21,22,23]); 
+
+
+
             $("#savethepatient").off("click").on("click", function(e) {
             var instance = $('#detailform').parsley();
             instance.validate()
