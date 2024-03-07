@@ -481,6 +481,7 @@
    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
    <script src="https://rawgit.com/AuspeXeu/bootstrap-datetimepicker/master/js/bootstrap-datetimepicker.js"></script>
    
+   
 
 
 <script>
@@ -503,13 +504,11 @@
  
              $('#datatable4 tbody').on('click', '.delete-btn', function () {
                  var data = table.row($(this).parents('tr')).data();
-                 console.log(data)
                  deleteMedicalNote(data[0])
              });
  
              $('.btn-edit').on("click", function (e) {
-                 var data = table.row($(this).parents('tr')).data();
-                 console.log(data[0]);               
+                 var data = table.row($(this).parents('tr')).data();           
                  openmedicalnote(data[0],data[6])
              });
  
@@ -569,8 +568,6 @@
             console.log(file[0]);
             file[0].style.text += ' -Deleting';
             var file_to_delete = file[0].getAttribute("name");
-            console.log(file_to_delete)
-            console.log(id,userid,file_to_delete)
             if(file_to_delete.length > 0){
 
                 let f = new FormData();
@@ -638,6 +635,7 @@
                             }
 
                             $.ajax(settings).done(function (response) {
+                                console.log(response);
                                 table = $('#datatable4').DataTable({
                                     "bDestroy": true,
                                     'paging': true, // Table pagination
@@ -702,5 +700,8 @@
  
 
  </script>
+
+
+
 
 </html>

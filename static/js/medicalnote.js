@@ -21,7 +21,7 @@ $(document).ready(function () {
 
         $.ajax(settings).done(function (response) {
             $('.modal.in').modal('hide')
-               $.notify("note Added Successfully", {"status":"success"});
+            $.notify("note Added Successfully", {"status":"success"});
             table.destroy();
             $('#datatable4 tbody').empty(); // empty in case the columns change
             getMedicalNote()

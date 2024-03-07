@@ -450,7 +450,6 @@ def appointment_Page():
         user = flask_login.current_user.get_dict()
         return render_template('appointment.html',user=user)
 
-
 @app.route("/patientform", methods=['GET'])
 def patient_folder_Load():
     id = request.args.get('id')
@@ -475,16 +474,20 @@ def patient_folder_Load():
 
     for i in range(length):
         # GET ONLY TEXT from DB
-        test= pat_mednotes[i]['body']
-        data = json.loads(test)
+        test= pat_mednotes[i]['body']        
+        data = json.loads(test)        
         content_html = data.get('content', '')
         soup = BeautifulSoup(content_html, 'html.parser')
+        print("soup",soup)
         text = soup.get_text() 
         # Get text and split by <br> tag
-        text_list = [tag.get_text() for tag in soup.find_all('div')]
-        text_with_separators = ','.join(text_list)
-        pat_mednotes[i]["text"]=text_with_separators   
-    print("appointments:",appointments)
+        text_list = [tag.get_text() for tag in soup.find_all(['div', 'br'])]  
+        if len(text_list)> 0:   
+            print("text_list",text_list)   
+            text_with_separators = ','.join(text_list)       
+            pat_mednotes[i]["text"]=text_with_separators 
+        else:
+            pat_mednotes[i]["text"]=text
     session['patientdata'] = patientdata
     return render_template('patientform.html',user=user,patientdata=patientdata,appointments=appointments,pat_mednotes=pat_mednotes,tasksfiles=tasksfiles, alert="")
 
