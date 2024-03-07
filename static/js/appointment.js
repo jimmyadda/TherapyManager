@@ -2,7 +2,6 @@ $(document).ready(function () {
 
     var table
 
-
     function addAppointment(data) {
 
         var settings = {
@@ -100,6 +99,8 @@ swal({
         }
 
         $('#unavailableHours').val(unavailableHours); 
+           
+        
 
             table = $('#datatable4').DataTable({
                 "bDestroy": true,
@@ -120,16 +121,17 @@ swal({
                     },
                     {
                         mRender: function (o) {
-                            return '<button class="btn-xs btn btn-danger delete-btn" type="button">Delete</button>';
+                            return '<button id="delbtn" class="btn-xs btn btn-danger delete-btn" type="button">Delete</button>';
                         }
                     }
         ]
             });
-            $('#datatable4 tbody').on('click', '.delete-btn', function () {
+            $(".delete-btn").click(function() { // using the unique ID of the button
+                var table = $('#datatable4').DataTable();
                 var data = table.row($(this).parents('tr')).data();
-                deleteAppointment(data.app_id)
-            });
-
+                console.log(data.app_id)
+                deleteAppointment(data.app_id);
+              });
 
         });
 
@@ -162,8 +164,15 @@ swal({
         response[i].pat_fullname=response[i].pat_first_name+" "+response[i].pat_last_name
         response[i].doc_fullname=response[i].doc_first_name+" "+response[i].doc_last_name
         }
+         
+//        $('#pendingunavailableHours').val(unavailableHours); 
+     //disable datetime
+     var disabletimepending = $('#unavailableHours').val().split(',');
+     console.log(disabletimepending)
 
-        $('#pendingunavailableHours').val(unavailableHours); 
+
+
+
 
             table = $('#pendingtbl').DataTable({
                 "bDestroy": true,
@@ -184,45 +193,42 @@ swal({
                     },
                     {
                         mRender: function (o) {
-                            return '<button class="btn-xs btn btn-success edit-btn" type="button">Approve</button>';
+                            return '<button  class="btn-xs btn btn-success edit-btn pendingedit" type="button">Approve</button>';
                         }
                     },
                     {
                         mRender: function (o) {
-                            return '<button class="btn-xs btn btn-danger delete-btn" type="button">Delete</button>';;
+                            return '<button  class="btn-xs btn btn-danger pendingdel" type="button">Delete</button>';;
                         }
                     }
             ]
             });
 
+            $(".pendingdel").click(function() { // using the unique ID of the button
+                var table = $('#pendingtbl').DataTable();
+                var data = table.row($(this).parents('tr')).data();
+                console.log(data.app_id)
+                deleterequestAppointment(data.app_id);
+              });
+
+              $(".pendingedit").click(function() { // using the unique ID of the button
+                var table = $('#pendingtbl').DataTable();
+                var data = table.row($(this).parents('tr')).data();  
+                var dateavailable = false;
+                var datetocheck = data.appointment_date
+                if(disabletimepending.indexOf(datetocheck) > -1)
+                {
+                    swal("Oops...", "This date is unavailable!", "error");
+                }
+                else
+                {
+                    addAppointment(data);
+                    deleteapprovedAppointment(data.app_id);
+                }
 
 
-                        //delete
-                        $('#pendingtbl tbody').off('click').on('click', '.delete-btn', function () {
-                            var data = table.row($(this).parents('tr')).data();
-                            deleterequestAppointment(data.app_id)
-                        });
-            
-                                //approve           
-                                $('#pendingtbl tbody').off('click').on('click', '.edit-btn',function () {
-                                    var data = table.row($(this).parents('tr')).data();                
-                                    console.log(data.appointment_date);
-            
-                                    var available =  checkdate(data).
-                                    then(response => 
-                                      {
-                                        console.log("response",response);
-                                        if(response=="OK")
-                                        {
-                                          addAppointment(data);
-                                          deleteapprovedAppointment(data.app_id);
-                                        }
-                                        else{
-                                          swal("Oops...", "This date is unavailable!", "error");
-                                        }
-                                      }); 
-            
-                                });
+              });
+
 
         });
 
@@ -282,31 +288,33 @@ swal({
             });
     }
 
+
+
     $("#addpatient").click(function () {
 
     $('#myModal').modal().one('shown.bs.modal', function (e) {
 
     $("#doctor_select").html(doctorSelect)
      $("#patient_select").html(patientSelect)
-       
+    
+     //disable datetime
+     var disabletime = $('#unavailableHours').val().split(',');
+      disabletime = changearrformat(disabletime);
+
+
 
       $(".form_datetime").datetimepicker({
          format: 'yyyy-mm-dd hh:ii:00',
-         minuteStep : 30,        
+         minuteStep : 60,        
          startDate: new Date(),
          initialDate: new Date(),
-         onRenderDay: function(date) {
-          alert(date);
-        }
+         onRenderHour:function(date){
+            if(disabletime.indexOf(formatDate(date)+":"+pad(date.getUTCHours()))>-1)
+              {
+                  return ['disabled'];
+              }
+        }         
     });
-    $('#datepicker1').on('changeDate', function(event) {
-       var reqDate = $('#datepicker1').val()
-       //check date
-    });
-
-     //    $('#datepicker1').datetimepicker('setHoursDisabled', [0,1,2,3,4,5,6,7,18,19,20,21,22,23]); 
-
-
 
             $("#savethepatient").off("click").on("click", function(e) {
             var instance = $('#detailform').parsley();
@@ -376,22 +384,29 @@ var patientSelect=""
         }
 
 
-        async function checkdate(data){
-            //Check Date 
-            let f = new FormData();
-            f.append("appointmentdate",data.appointment_date)
-            f.append("pat_id",data.pat_id)
-            console.log('checkdate')
-            const response = await fetch("/checkdate",{
-            "method": "POST",
-            "body":f,       
-            })
-            const chedatdate = await response.text();
-            return chedatdate;
-        }
+        // async function checkdate(data){
+        //     //Check Date 
+        //     let f = new FormData();
+        //     f.append("appointmentdate",data.appointment_date)
+        //     f.append("pat_id",data.pat_id)
+        //     console.log('checkdate')
+        //     const response = await fetch("/checkdate",{
+        //     "method": "POST",
+        //     "body":f,       
+        //     })
+        //     const chedatdate = await response.text();
+        //     return chedatdate;
+        // }
 
-getDoctor()
-getPatient()
-getAppointment()
-getPendingAppointment()
-})
+        getAppointment();
+        getPendingAppointment();
+
+getDoctor();
+getPatient();
+
+
+
+
+
+
+});

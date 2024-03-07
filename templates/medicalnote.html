@@ -143,7 +143,7 @@
     "method": "POST",
     "body":f,       
     }).then(response => response.text()).then(data => {
-        console.log(data)
+        $.notify("medical note Added Successfully", {"status":"success"});
     }).catch(error => {
         console.error('Error:', error);
         alert('Failed to save text');
@@ -164,15 +164,14 @@
         }
 
         $.ajax(settings).done(function (response) {
-            console.log(response)
-         for(i=0;i<response.length;i++){
-          response[i].pat_fullname=response[i].pat_first_name+" "+response[i].pat_last_name
-        patientSelect +="<option value="+response[i].pat_id+">"+response[i].pat_fullname+"</option>"
-        }
-        $("#patient_select").html(patientSelect);
-            })
+            response.pat_fullname = response.pat_first_name+" "+response.pat_last_name
+            patientSelect +="<option value="+response.pat_id+">"+response.pat_fullname+"</option>";
 
-            $("#patient_select").html(patientSelect)
+        $("#patient_select").html(patientSelect);
+
+        });
+
+            //$("#patient_select").html(patientSelect)
         }
 
    $(document).ready(function () {
@@ -196,4 +195,40 @@
     }
 </script>
 </body>
+
+   <!-- =============== VENDOR SCRIPTS ===============-->
+   <!-- MODERNIZR-->
+   <script src="/static/vendor/modernizr/modernizr.custom.js"></script>
+
+   <!-- JQUERY-->
+   <script src="/static/vendor/jquery/dist/jquery.js"></script>
+
+   <!-- <script src="/static/vendor/moment/moment-with-locales.min.js"></script> -->
+   <!-- BOOTSTRAP-->
+   <script src="/static/vendor/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="/static/vendor/datatables/media/js/jquery.dataTables.min.js"></script>
+   <script src="/static/vendor/datatables-colvis/js/dataTables.colVis.js"></script>
+   <script src="/static/vendor/datatables/media/js/dataTables.bootstrap.js"></script>
+   <script src="/static/vendor/serialize/jquery.serializejson.js"></script>
+   <!-- STORAGE API-->
+   <script src="/static/vendor/jQuery-Storage-API/jquery.storageapi.js"></script>
+   <!-- JQUERY EASING-->
+   <script src="/static/vendor/jquery.easing/js/jquery.easing.js"></script>
+   <!-- ANIMO-->
+   <script src="/static/vendor/animo.js/animo.js"></script>
+    <script src="/static/vendor/parsley/parsley.min.js"></script>
+       <script src="/static/vendor/sweetalert/dist/sweetalert.min.js"></script>
+   <!-- LOCALIZE-->
+   <!-- <script src="/static/vendor/jquery-localize-i18n/dist/jquery.localize.js"></script> -->
+    <script src="/static/vendor/datepicker/build/js/bootstrap-datetimepicker.min.js"></script> 
+   <!-- =============== PAGE VENDOR SCRIPTS ===============-->
+
+
+   <!-- =============== APP SCRIPTS ===============-->
+   <script src="/static/app/js/app.js"></script>
+<script src="/static/js/appointment.js"></script>
+<script src="/static/js/disabledatetime.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://rawgit.com/AuspeXeu/bootstrap-datetimepicker/master/js/bootstrap-datetimepicker.js"></script>
+
 </html>

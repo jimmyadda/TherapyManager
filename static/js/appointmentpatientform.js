@@ -14,6 +14,7 @@ $(document).ready(function () {
  
     function addAppointment(data) {
         var table
+
        console.log(data);
         var settings = {
             "async": true,
@@ -84,6 +85,8 @@ swal({
     }
 
     function getAppointment() {
+        var unavailableHours = [];
+
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         var patid = urlParams.get('id');
@@ -99,16 +102,17 @@ swal({
         }
 
         $.ajax(settings).done(function (response) {
-
-        //filter response' by pat_id
-         response =  filterByPatid2(response,patid);
-         console.log(response)
         for(i=0;i<response.length;i++){
+
+        //set Unavailable hours
+        var indx  = unavailableHours.indexOf(response[i].appointment_date);
+        if (indx <=0){unavailableHours.push(response[i].appointment_date);}
+
         response[i].pat_fullname=response[i].pat_first_name+" "+response[i].pat_last_name
         response[i].doc_fullname=response[i].doc_first_name+" "+response[i].doc_last_name
         }
 
-
+            $('#unavailableHours').val(unavailableHours);
 
             table = $('#datatable5').DataTable({
                 "bDestroy": true,
@@ -152,14 +156,28 @@ swal({
         $("#doctor_select").html(doctorSelect)
         $("#patient_select").html(patientSelect)
 
-        console.log("open modal",patienid)
+
         $("#patient_select").val(patienid); 
      
-        $(".form_datetime").datetimepicker({
-            format: 'yyyy-mm-dd hh:ii:00',
-            startDate:new Date(),
-            initialDate: new Date()
-        });
+     //disable datetime
+     var disabletime = $('#unavailableHours').val().split(',');
+      disabletime = changearrformat(disabletime);
+
+
+
+      $(".form_datetime").datetimepicker({
+         format: 'yyyy-mm-dd hh:ii:00',
+         minuteStep : 60,        
+         startDate: new Date(),
+         initialDate: new Date(),
+         onRenderHour:function(date){
+            if(disabletime.indexOf(formatDate(date)+":"+pad(date.getUTCHours()))>-1)
+              {
+                  return ['disabled'];
+              }
+        }         
+    });
+
             $("#savethepatient").off("click").on("click", function(e) {
             var instance = $('#detailform').parsley();
             instance.validate()
@@ -219,12 +237,14 @@ var patientSelect=""
         }
 
         $.ajax(settings).done(function (response) {
+    
          for(i=0;i<response.length;i++){
           response[i].pat_fullname=response[i].pat_first_name+" "+response[i].pat_last_name
         patientSelect +="<option value="+response[i].pat_id+">"+response[i].pat_fullname+"</option>"
         }
 
-                })
+                });
+
         }
 
 getDoctor()

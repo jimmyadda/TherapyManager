@@ -39,7 +39,6 @@ api = Api(app)
 # Routes API
 api.add_resource(Patients, '/patientapi')
 api.add_resource(Patient, '/patientapi/<int:id>')
-
 api.add_resource(Doctors, '/doctorapi')
 api.add_resource(Doctor, '/doctorapi/<int:id>')
 api.add_resource(Appointments, '/appointmentapi')
@@ -204,98 +203,6 @@ def logout_page():
     flask_login.logout_user()
     return redirect("/")
 
-@app.route("/main")
-@flask_login.login_required
-def main_page():
-    folderid="0"
-    if 'folderid' in request.values:
-        folderid = request.values['folderid']
-    id="1"
-    if 'id' in request.values:
-        id = request.values['id']
-
-    user = flask_login.current_user.get_dict()    
-    task_users = database_read(f"select name,email from accounts  order by name;")
-    folders = database_read(f"select * from folders order by name;")
-    tasks = database_read(f"select * from tasks where folderid= '{folderid}' AND status != 'CLOSE';")
-    maintask = database_read(f"select * from tasks where id= '{id}';") #AND userid='{user['userid']}'
-    closedtasks = database_read(f"select * from tasks where status = 'CLOSE';")
-    tasksfiles = database_read(f"select * from tasksfiles where id= '{id}';")
-    TaskNotes = database_read(f"select * from TasksNotes where id= '{id}';")
-    TaskCategories = database_read(f"select * from categories;")
-    if len(maintask) == 1:
-        maintask = maintask[0]
-    else:
-        maintask={}
-    return render_template('main.html',user=user,folders=folders,tasks=tasks,maintask=maintask,folderid=folderid,id=id,task_users=task_users,tasksfiles=tasksfiles,TaskNotes=TaskNotes,TaskCategories=TaskCategories,closedtasks=closedtasks)
-
-@app.route("/save_task", methods=['POST'])
-@flask_login.login_required
-def task_update():
-    user = flask_login.current_user.get_dict()
-    form = dict(request.values)
-    id = form['id']
-    folderid = form['folderid']
-    session['formData'] = form
-    change_in_task=""
-    if 'submit-close' in form:
-        form['status']= 'CLOSE'  #status open or close
-        change_in_task= "Task was Closed"
-        #Log
-        logger.info(f"Task '{id}' has been closed by: {user['userid']} date: {str(datetime.datetime.now())}")
-        #sendmail
-        ok = send_notification(change_in_task) 
-    if 'submit-reopen' in form:
-        form['status']= 'OPEN'  #status open or close
-        change_in_task= "Task was Reopened"
-        #Log
-        logger.info(f"Task '{id}' has been Reopened by: {user['userid']} date: {str(datetime.datetime.now())}")
-        #sendmail
-        ok = send_notification(change_in_task)         
-    if 'submit-delete' in form:
-        database_write(f"delete from tasks where id='{id}';")
-        change_in_task= "Task was Deleted"
-        #Log
-        logger.info(f"Task '{id}' has been delete by: {user['userid']} date: {str(datetime.datetime.now())}")
-        #mail
-        ok = send_notification(change_in_task) 
-        return redirect(f"/main?folderid={folderid}")
-    if id == "": #new TASK
-        id = str(uuid.uuid1())
-        form['id'] = id
-        form['status'] = 'OPEN'
-        form['created'] = datetime.datetime.now().strftime("%Y-%m-%d")
-        sql = """insert into tasks 
-        (userid,folderid,id,title,due,reminder,created,category,priority,status,desc,assignto) values 
-        (:userid,:folderid,:id,:title,:due,:reminder,:created,:category,:priority,:status,:desc,:assignto);"""
-        ok = database_write(sql,form)
-        if ok == 1:
-            return redirect(f"/main?folderid={folderid}&id{id}") 
-        else:
-            return redirect(f"/error?folderid={folderid}&id{id}")         
-    else: #existing task Noraml Update
-        maintask = database_read(f"select * from tasks where id= '{id}' ;")  #AND userid='{user['userid']}'          
-        sql = "UPDATE tasks SET title =:title, due =:due, reminder =:reminder, category =:category, priority =:priority, status=:status, desc =:desc, assignto =:assignto where id =:id"
-        ok = database_write(sql,form)
-        if ok == 1:
-           ## SEND Notification mail'##
-           if maintask[0].get('assignto') != form.get('assignto'):
-             #Log
-            logger.info(f"Task : '{form['id']}' is now assinged to: {form.get('assignto')}  by: {user['userid']} date: {str(datetime.datetime.now())}")
-            #send Email
-            session['formData'] = form
-            assinged_notif = f"Task : '{form['id']}' was now assinged to: {form.get('assignto')}  by: {user['userid']}"
-            notif_sent = send_notification(assinged_notif) 
-            if notif_sent:
-                return redirect(f"/main?folderid={folderid}&id={id}") 
-            else:
-                return redirect(f"/error?folderid={folderid}&id={id}") 
-           else:
-            return redirect(f"/main?folderid={folderid}&id={id}") 
-        else:
-            return redirect(f"/error?folderid={folderid}&id={id}") 
-    return "ok"
-
 #endregion
 
 #General Routes
@@ -407,7 +314,6 @@ def download_file(filename):
 def delete_folder():
     data=  dict(request.values)
     user = flask_login.current_user.get_dict() 
-    print(data)
     id = data['folderid']
     sql = f"Delete from folders where id = '{id}';"
     print(sql)
@@ -529,18 +435,12 @@ def send_appointment(notification=''):
 def doctor_Page():
     id = request.args.get('id')
     user = flask_login.current_user.get_dict()
-    mytasks = database_read(f"select ts.*,fol.name as foldername from tasks as ts left join folders as fol on ts.folderid = fol.id where assignto= '{user['name']}'")
-    closedtasks = database_read(f"select ts.*,fol.name as foldername from tasks as ts left join folders as fol on ts.folderid = fol.id where  status = 'CLOSE';")
-    print(closedtasks)
     return render_template('doctor.html',user=user)
 
 @app.route("/patient", methods=['GET'])
 def patient_Page():
     id = request.args.get('id')
     user = flask_login.current_user.get_dict()
-    mytasks = database_read(f"select ts.*,fol.name as foldername from tasks as ts left join folders as fol on ts.folderid = fol.id where assignto= '{user['name']}'")
-    closedtasks = database_read(f"select ts.*,fol.name as foldername from tasks as ts left join folders as fol on ts.folderid = fol.id where  status = 'CLOSE';")
-    print(closedtasks)
     return render_template('patient.html',user=user)
 
 @app.route("/appointment", methods=['GET'])

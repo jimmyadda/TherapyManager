@@ -359,7 +359,7 @@
     </div> <!--end of content-wrapper-->
          </section>
     </div>
-
+    <input id="unavailableHours" type="text" style="display: none;"/>
     <script>
  $( document ).ready(function() {
     const queryString = window.location.search;
@@ -475,8 +475,12 @@
    <script type="text/javascript" src="https://cdn.addevent.com/libs/atc/1.6.1/atc.min.js" async defer></script>
    <!-- =============== PAGE VENDOR SCRIPTS ===============-->
    <!-- =============== APP SCRIPTS ===============-->
-
+   <script src="/static/js/medicalnote.js"></script>
    <script src="/static/app/js/app.js"></script>
+   <script src="/static/js/disabledatetime.js"></script>
+   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+   <script src="https://rawgit.com/AuspeXeu/bootstrap-datetimepicker/master/js/bootstrap-datetimepicker.js"></script>
+   
 
 
 <script>
@@ -542,8 +546,8 @@
              $.ajax(settings).done(function (response) {
                  swal("Deleted!", "Medical Note has been deleted.", "success");
                  table.destroy();
-                 $('#datatable4 tbody').empty(); // empty in case the columns change
-                 getMedicalNote()
+                 //$('#datatable4 tbody').empty(); // empty in case the columns change
+                 getMedicalNote();
              });
          });
  
@@ -581,12 +585,11 @@
                 // handle success
                 response.json()
                 console.log("Remove_file- success",response);
-                location.reload()
+                location.reload();
+                getMedicalNote();
                 })
 
                 return "ok"
-                // .then(response => response.json())
-                // .then(response => console.log(response))
             } //end if file
 
         }
@@ -620,7 +623,81 @@
 
                 })
 
-            })                
+            });
+            
+               function getMedicalNote() {
+
+                            var settings = {
+                                "async": true,
+                                "crossDomain": true,
+                                "url": "medicalnoteapi",
+                                "method": "GET",
+                                "headers": {
+                                    "cache-control": "no-cache"
+                                }
+                            }
+
+                            $.ajax(settings).done(function (response) {
+                                table = $('#datatable4').DataTable({
+                                    "bDestroy": true,
+                                    'paging': true, // Table pagination
+                                    'ordering': true, // Column ordering
+                                    'info': true, // Bottom left status text
+                                    aaData: response,
+                                    "aaSorting": [],
+                                    aoColumns: [   
+                                        {
+                                            mData: 'pat_id'
+                                        },
+                                        {
+                                            mData: 'create_date'
+                                        },
+                                        {
+                                            mData: 'body'
+                                        },
+                                        {
+                                            mRender: function (o) {
+                                                return '<button class="btn-xs btn btn-info btn-edit" type="button">Edit</button>';
+                                            }
+                                        },
+                                        {
+                                            mRender: function (o) {
+                                                return '<button class="btn-xs btn btn-danger delete-btn" type="button">Delete</button>';
+                                            }
+                                        }
+                            ]
+                                });
+                                $('#datatable4 tbody').on('click', '.delete-btn', function () {
+                                    var data = table.row($(this).parents('tr')).data();
+                                    deleteMedicalNote(data.doc_id)
+
+                                });
+                                $('.btn-edit').one("click", function (e) {
+                                    var data = table.row($(this).parents('tr')).data();
+                                    $('#myModal').modal().one('shown.bs.modal', function (e) {
+                                        for (var key in data) {
+                                            $("[name=" + key + "]").val(data[key])
+                                        }
+                                        $("#savethepatient").off("click").on("click", function (e) {
+                                            var instance = $('#detailform').parsley();
+                                            instance.validate()
+                                            console.log(instance.isValid())
+                                            if (instance.isValid()) {
+                                                jsondata = $('#detailform').serializeJSON();
+                                                updateMedicalNote(jsondata, data.doc_id)
+                                            }
+
+                                        })
+                                    })
+
+
+
+                                });
+
+                            });
+
+
+                            }
     });
  
 
