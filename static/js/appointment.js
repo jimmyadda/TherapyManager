@@ -36,7 +36,12 @@ $(document).ready(function () {
             });
             getAppointment()
         });
+        refreshParent();
+    }
 
+    function refreshParent() {
+        window.opener.location.reload();
+        window.close();
     }
 
     function deleteAppointment(id) {

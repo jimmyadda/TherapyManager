@@ -94,6 +94,7 @@ class RequestAppointments(Resource):
         conn.commit()
         return appointment
 
+
 class RequestAppointment(Resource):
     """This contain all api doing activity with single appointment"""
 

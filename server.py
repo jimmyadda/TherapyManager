@@ -90,7 +90,6 @@ def load_user(userid):  #or client patid
         user = User(users[0]['userid'],users[0]['email'],users[0]['name'])
     else:
         user = ClientUser(client[0]['pat_id'],client[0]['pat_email'],client[0]['pat_first_name'])
-    print("userloader", user)
     if user:
         user.id = userid
         return user
@@ -333,6 +332,7 @@ def send_appointment(notification=''):
     pat_data =  database_read(f"select * from patient where pat_id= '{data['id']}';")
     doc_id = data['doc_id']
     doc_data =  database_read(f"select * from doctor where doc_id= '{doc_id}';")
+    pat_id = pat_data[0]['pat_id']
     pat_email = pat_data[0]['pat_email']
     doc_fullname = doc_data[0]['doc_first_name']+" " + doc_data[0]['doc_last_name'] 
     pat_fullname = pat_data[0]['pat_first_name']+" "+pat_data[0]['pat_last_name']
@@ -343,19 +343,16 @@ def send_appointment(notification=''):
     receiver_email = pat_email
     #Build Msg
     # Email content
-
+    Portal_url = request.host_url + f"/clients/client_login"
     appointmentDuration = data['appointment_date']
-    print(appointmentDuration)
+
     format = "%Y-%m-%dT%H:%M:%S.%fZ"
     Varformat = "%Y-%m-%d %H:%M:%S"
-    
-    #print(appointmentDuration.strftime("%Y-%m-%dT%H:%M:%SZ"))
+
     date_obj = datetime.datetime.strptime(appointmentDuration, Varformat)
     time_change = datetime.timedelta(minutes=75) 
     appointmentEnd = date_obj + time_change 
-    print(date_obj,appointmentEnd) 
-   
-    
+     
     notification = 'נשמח לראותך '
     email_body = '''
                 <div id='App_mail' style="text-align: right;direction: rtl;" >
@@ -375,23 +372,14 @@ def send_appointment(notification=''):
             'Appointment Date': data['appointment_date'],
             'note': notification
             }          
-
+    
     email_content = email_body.format(**email_data)
+    email_content += f"<br><p><a href={Portal_url}>Log In to Portal</a></p>"
 
-    # desc = """רציתי ליצור קשר כדי לקבוע את פגישת הטיפול הבאה שלנו,
-    # להמשיך את עבודתנו יחד במסע הרווחה הרגשית.
-    # בנוסף, אם יש נושאים או תחומים ספציפיים שבהם תרצה להתמקד במהלך הפגישה הבאה שלנו,
-    # אנא אל תהסס ליידע אותי. ההשקעה שלך חשובה,
-    #   אני רוצה להבטיח שהמפגשים שלנו יהיו מותאמים לצרכים ולמטרות שלך.
-    # אני מחכה בקוצר רוח לפגישה הבאה שלנו.
-    # להמשך עבודתנו המשותפת.בינתיים,
-    #   אם יש לך שאלות או חששות,
-    #   אנא אל תהסס לפנות.בברכה ,
-    #   קארין עדה"""
+   
 
+    # Create MIME message ICS File
     desc = u'פגישת טיפול'
-
-    # Create MIME message
     ics = render_ics(
             title=u'פגישת טיפול',
             description=desc,
@@ -408,13 +396,15 @@ def send_appointment(notification=''):
     message['From'] = sender_email
     message['To'] = receiver_email    
     message['Subject'] = str(subject)
+    message.attach(MIMEText(email_content,'html',_charset='utf-8')) 
     message.attach(MIMEText(email_content,'text/calendar',_charset='utf-8'))    
     #calendar
+    
     attachment = MIMEBase('text', 'calendar; name=calendar.ics; method=REQUEST; charset=UTF-8')
     attachment.set_payload(ics.encode('utf-8'))
     encoders.encode_base64(attachment)
     attachment.add_header('Content-Disposition', 'attachment; filename=%s' % "calendar.ics")
-
+    
     message.attach(attachment)
     # Connect to the SMTP server and send the email
     with smtplib.SMTP(mail_settings['MAIL_SERVER'], 587) as server:
@@ -453,6 +443,7 @@ def appointment_Page():
 @app.route("/patientform", methods=['GET'])
 def patient_folder_Load():
     id = request.args.get('id')
+    messages = database_read(f"select * from messages where pat_id= '{id}';")
     user = flask_login.current_user.get_dict()    
     patientdata = database_read(f"select * from patient where pat_id= '{id}';")
     tasksfiles = database_read(f"select * from Patientfiles where pat_id= '{id}';") #id = pat_id
@@ -465,31 +456,27 @@ def patient_folder_Load():
         med = Medicalnote()
         mednote = med.get(noteid)
     pat_id = data['id']
-    print("pat_id",pat_id)
     apps = Appointments()
     appointments = apps.getappointmentsbypatient(pat_id)    
     notes = Medicalnotes()
-    pat_mednotes = notes.getnotebypatient(pat_id)
+    pat_mednotes = notes.getnotebypatient(pat_id)    
     length = len(pat_mednotes)
-
     for i in range(length):
         # GET ONLY TEXT from DB
-        test= pat_mednotes[i]['body']        
+        test= pat_mednotes[i]['body']       
         data = json.loads(test)        
         content_html = data.get('content', '')
         soup = BeautifulSoup(content_html, 'html.parser')
-        print("soup",soup)
         text = soup.get_text() 
         # Get text and split by <br> tag
-        text_list = [tag.get_text() for tag in soup.find_all(['div', 'br'])]  
-        if len(text_list)> 0:   
-            print("text_list",text_list)   
+        text_list = [tag.get_text() for tag in soup.find_all(['div', 'br'])] 
+        if len(text_list)> 1:     
             text_with_separators = ','.join(text_list)       
             pat_mednotes[i]["text"]=text_with_separators 
         else:
             pat_mednotes[i]["text"]=text
     session['patientdata'] = patientdata
-    return render_template('patientform.html',user=user,patientdata=patientdata,appointments=appointments,pat_mednotes=pat_mednotes,tasksfiles=tasksfiles, alert="")
+    return render_template('patientform.html',user=user,patientdata=patientdata,messages=messages,appointments=appointments,pat_mednotes=pat_mednotes,tasksfiles=tasksfiles, alert="")
 
 @app.route("/patientform", methods=["POST"])
 @flask_login.login_required
@@ -530,11 +517,15 @@ def patientnotes_page():
     data = json.loads(test)
     content_html = data.get('content', '')
     soup = BeautifulSoup(content_html, 'html.parser')
-    text = soup.get_text() 
+    text = soup.get_text()
+    print("text",text) 
     # Get text and split by <br> tag
-    text_list = [tag.get_text() for tag in soup.find_all('div')]
-    text_with_separators = ','.join(text_list)
-    pat_mednotes[0]["text"]=text_with_separators
+    text_list = [tag.get_text() for tag in soup.find_all(['div'])]
+    if len(text_list)>0:
+        text_with_separators = ','.join(text_list)
+        pat_mednotes[0]["text"]=text_with_separators
+    else:
+        pat_mednotes[0]["text"]=text
     return render_template('patientnotes.html',user=user,pat_mednotes=pat_mednotes)
 
 @app.route("/medicalnote" , methods=['GET'])
@@ -550,13 +541,11 @@ def medicalnote_page():
     pat_mednotes=""
     if 'noteid' in request.values:
         noteid = request.values['noteid']
-        print("noteid",noteid)
         med = Medicalnote()
         mednote = med.get(noteid)
         # notes = Medicalnotes()
         # pat_mednotes = notes.getnotebypatient(pat_id)   
         pat_mednotes = database_read(f"select * from medrecords where pat_id= '{pat_id}' and rec_id = '{noteid}';")
-        print("pat_mednotes",pat_mednotes)
         texteditor = pat_mednotes[0]['body']
         y = json.loads(texteditor)
         texteditor = y
@@ -584,13 +573,70 @@ def updatemedicalnote():
         else:
             return "ERROR"
     else:
-        #New 
-        print("insert:", id)   
+        #New   
         now = datetime.datetime.now().strftime("%Y-%m-%d")
         sql = f"INSERT into medrecords (pat_id,create_date,body) VALUES  ('{id}','{now}','{contentbdy}');"
         ok = database_write(sql,data)
         if ok == 1:
             return render_template('medicalnote.html',user=user,data=data)
+        else:
+            return "ERROR"
+        
+        
+@app.route("/message" , methods=['GET'])
+@flask_login.login_required
+@admin_only
+def message_page():
+    user = flask_login.current_user.get_dict()
+    data = request.values
+    pat_id = data['pat_id']
+    recid = request.values['rec_id'] 
+    app_id = 0
+    if 'app_id' in request.values:
+        app_id =  data['app_id']
+    if 'mark' in request.values:
+        sql = f"update messages SET status=1 where rec_id = '{recid}';"
+        ok = database_write(sql,data)
+        if ok == 1:
+            return redirect(f"/portal?patid={pat_id}")  
+        else:
+            return "ERROR"
+        
+    if 'rec_id' in request.values:
+        recid = request.values['rec_id']   
+        pat_messages = database_read(f"select * from messages where pat_id= '{pat_id}' and rec_id = '{recid}';")
+    else:
+        pat_messages = database_read(f"select * from messages where pat_id= '{pat_id}' ;")
+        return render_template('message.html',user=user,pat_messages=pat_messages)
+
+@app.route("/message" , methods=['POST'])
+@flask_login.login_required
+def updatemessages():
+    user = flask_login.current_user.get_dict()
+    data = dict(request.values)
+    id = data['pat_id']
+    app_id = 0
+    if 'app_id' in request.values:
+        app_id =  data['app_id']
+    msg = data['msg']
+    if 'rec_id' in request.values:
+        recid = request.values['rec_id']
+        #update
+        print("update:", recid)
+        now = datetime.datetime.now().strftime("%Y-%m-%d")
+        sql = f"update messages SET pat_id= '{id}', create_date= '{now}' ,message = '{msg}',app_id='{app_id}' where rec_id = '{recid}';"
+        ok = database_write(sql,data)
+        if ok == 1:
+            return render_template('medicalnote.html',user=user,data=data)
+        else:
+            return "ERROR"
+    else:
+        #New   
+        now = datetime.datetime.now().strftime("%Y-%m-%d")
+        sql = f"INSERT into messages (pat_id,create_date,message,app_id,status) VALUES  ('{id}','{now}','{msg}','{app_id}','0');"
+        ok = database_write(sql,data)
+        if ok == 1:
+            return render_template('message.html',user=user,data=data)
         else:
             return "ERROR"
 #endregion
@@ -622,6 +668,7 @@ def get_portal():
     id = request.args.get('patid')
     user = flask_login.current_user.get_dict()
     patientdata = database_read(f"select * from patient where pat_id= '{id}';")
+    patientmessages = database_read(f"select * from messages where status = 0 and pat_id= '{id}';")
     lastappointment = database_read(f"SELECT *  FROM appointment where pat_id='{id}' and appointment_date < DATETIME('now') order by appointment_date desc LIMIT 1;")
     nextappointment = database_read(f"SELECT *  FROM appointment where pat_id='{id}' and appointment_date >= DATETIME('now') order by appointment_date  asc LIMIT 1;")
     patfiles = database_read(f"select * from Patientfiles where pat_id= '{id}';") #id = pat_id
@@ -631,8 +678,10 @@ def get_portal():
         appointment_dates["nextappointment"] = nextappointment[0]["appointment_date"]
     apps = Appointments()
     appointments = apps.getappointmentsbypatient(id)
+
+    print(patientmessages)
     session['patientdata'] = patientdata
-    return render_template('portal.html',user=user,patientdata=patientdata,appointments=appointments,appointment_dates=appointment_dates,patfiles=patfiles,alert="")
+    return render_template('portal.html',user=user,patientdata=patientdata,patientmessages=patientmessages,appointments=appointments,appointment_dates=appointment_dates,patfiles=patfiles,alert="")
 
 @app.route("/checkdate",methods=["POST"])
 @flask_login.login_required

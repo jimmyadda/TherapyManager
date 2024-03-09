@@ -26,7 +26,13 @@ $(document).ready(function () {
             $('#datatable4 tbody').empty(); // empty in case the columns change
             getMedicalNote()
         });
+        refreshParent();
+    }
 
+
+    function refreshParent() {
+        window.opener.location.reload();
+        window.close();
     }
 
     function deleteMedicalNote(id) {
@@ -97,10 +103,9 @@ $(document).ready(function () {
             "headers": {
                 "cache-control": "no-cache"
             }
-        }
-
+        }        
         $.ajax(settings).done(function (response) {
-            console.log(response);
+            
             table = $('#datatable4').DataTable({
                 "bDestroy": true,
                 'paging': true, // Table pagination

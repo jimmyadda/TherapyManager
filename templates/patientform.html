@@ -115,6 +115,13 @@
                         </div>
                     </div>
             </td>
+            <td>
+            <div class="form-group">
+                <div class="col-lg-10">
+                    <input type="button"  class="blue icon-save" onclick="open_message();" value="send message">
+                </div>
+            </div>  
+        </td>
         </tr>
             <tr>
                 <td>
@@ -366,8 +373,7 @@
         const urlParams = new URLSearchParams(queryString);
         const id = urlParams.get('id')
         if (id) {
-            var jsonData = JSON.parse('{{ session["patientdata"] | tojson | safe }}');
-            console.log(jsonData);
+            var jsonData = JSON.parse('{{ session["patientdata"] | tojson | safe }}');        
             sessionStorage.setItem('pat_det', JSON.stringify(jsonData));
 
         }
@@ -375,13 +381,13 @@
        // var x = JSON.parse('{{ appointments | tojson | safe }}');
 
                 let test = sessionStorage.getItem("pat_det");
-                console.log("test",test);
+                
                 let json_data = JSON.stringify(test);
                 var data = JSON.parse(json_data); 
                 const newdata = JSON.parse(data); 
                 console.log("newdata",newdata);
                     //display data
-                    populate('#maintbl', newdata[0]) 
+                populate('#maintbl', newdata[0]) 
                     
             $("#addpatient").click(function () {
                 $('#myModal').modal().one('shown.bs.modal', function (e) {
@@ -500,7 +506,8 @@
                 removefiles.forEach(btn => {
                 btn.addEventListener('click',Remove_file);
             });
-      var table = $('#datatable4').DataTable();
+     
+             var table = $('#datatable4').DataTable();
  
              $('#datatable4 tbody').on('click', '.delete-btn', function () {
                  var data = table.row($(this).parents('tr')).data();
@@ -623,7 +630,7 @@
             });
             
                function getMedicalNote() {
-
+                console.log("test");
                             var settings = {
                                 "async": true,
                                 "crossDomain": true,
@@ -633,9 +640,9 @@
                                     "cache-control": "no-cache"
                                 }
                             }
-
+                            console.log("settings",settings);
                             $.ajax(settings).done(function (response) {
-                                console.log(response);
+                                console.log("response",response);
                                 table = $('#datatable4').DataTable({
                                     "bDestroy": true,
                                     'paging': true, // Table pagination
@@ -698,7 +705,13 @@
                             }
     });
  
-
+   function open_message(){               
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const patienid = urlParams.get('id')
+         window.open('/message?id='+patienid); 
+         return false;
+     }
  </script>
 
 

@@ -6,11 +6,11 @@ from package.model import conn
 
 class Medicalnotes(Resource):
     """This contain apis to carry out activity with all Medicalnote"""
-
+   
     def get(self):
         """Retrive list of all the Medicalnote"""
         medicalnote = conn.execute("SELECT * FROM medrecords ORDER BY create_date DESC").fetchall()
-        return Medicalnotes
+        return medicalnote
 
     def getnotebypatient(self,patid):
         """Retrive list of all the Medicalnote"""
