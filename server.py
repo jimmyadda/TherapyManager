@@ -9,7 +9,6 @@ import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
-from time import sleep
 from flask import Flask, abort, send_file,flash,render_template,request,redirect, send_from_directory, session
 import flask_login
 import sqlite3
@@ -28,7 +27,6 @@ from package.client import ClientUser
 from package.medicalnote import Medicalnote,Medicalnotes
 from flask_mail import Mail, Message
 from create_account import create_account
-from mail import send_notification
 from package.Myutils import render_ics
 import json
 
@@ -83,18 +81,36 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(userid):  #or client patid
+    user=None
+
     users = database_read(f"select * from accounts where userid='{userid}';")
     client = database_read(f"select * from patient where pat_id='{userid}';")
     
     if len(users)==1:        
         user = User(users[0]['userid'],users[0]['email'],users[0]['name'])
-    else:
+    if len(client)==1:
         user = ClientUser(client[0]['pat_id'],client[0]['pat_email'],client[0]['pat_first_name'])
     if user:
         user.id = userid
         return user
     else:
         return None
+    
+def database_check(data=None):
+    try:
+        
+        connection = sqlite3.connect(database_filename)
+        with open('package\model.py') as f:
+            connection.executescript(f.read())
+
+        db = connection.cursor()
+
+        connection.commit()
+        db.close()
+        connection.close()
+        return "ok" 
+    except Exception as e:
+        print("An exception occurred: ", e) 
 
 def database_write(sql,data=None):
     connection = sqlite3.connect(database_filename)
@@ -129,6 +145,8 @@ def database_read(sql,data=None):
 
 @app.route("/")
 def index_page():    
+    database_check()
+    
     if flask_login.current_user.is_authenticated:
         print("is_authenticated")
         logger.info(str(flask_login.current_user.get_dict()) + " Has Logged in")   
@@ -703,7 +721,7 @@ def chekappointmentdate():
 
 
 #dev 
-app.run(debug=True)
+#app.run(debug=True)
 
 #production  - remark above
 if __name__ == "__main__":

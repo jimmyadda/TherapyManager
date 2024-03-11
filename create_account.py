@@ -4,7 +4,15 @@ import uuid
 import getpass
 import json
 
-database_filename = "Tasker.db"
+
+#Settings
+with open('config.json') as config_file:
+    config_data = json.load(config_file)
+Globalsetting = config_data['Global'] 
+  
+
+
+database_filename = Globalsetting['database'] #"TherapyManager.db"
 
 def database_write(sql,data=None):
     connection = sqlite3.connect(database_filename)

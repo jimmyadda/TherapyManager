@@ -18,10 +18,21 @@
         </form>
 </body>
 <script>
+  const root = document.querySelector(':root');
+
+// set css variable
+root.style.setProperty('--calendar-js-event-color', '#7eb1dd');
+root.style.setProperty('--calendar-js-dark-color', '#2F80E7');
+// to get css variable from :root
+const color = getComputedStyle(root).getPropertyValue('--calendar-js-dark-color'); // blue
+const eventscolor = getComputedStyle(root).getPropertyValue('--calendar-js-event-color'); // light blue
+
+
   var calendarInstance1 = new calendarJs( "calendar", {
     manualEditingEnabled: true,
     startOfWeekDay: 6, // 6 = Sunday
     reverseOrderDaysOfWeek: true,
+    
     // All your options can be set here
   } );
 
@@ -32,7 +43,10 @@
   console.log(object); 
   object['title'] = "פגישת טיפול עם : " + object.pat_first_name + " "+ object.pat_last_name
   object['from'] = object.appointment_date
-  object['to'] = object.appointment_date
+  //edit end time
+  var durration = new Date(Date.parse(object.appointment_date))
+  durration.setMinutes(durration.getMinutes() + 60);
+  object['to'] = durration
   });
 
   calendarInstance1.addEvents(events_data);
