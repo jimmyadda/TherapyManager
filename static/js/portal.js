@@ -11,10 +11,23 @@ function test(patienid){
     $("#doctor_select").html(doctorSelect)
     $("#patient_select").html(patientSelect)    
     $("#patient_select").val(patienid);
+
+         //disable datetime
+         var disabletime = $('#unavailableHours').val().split(',');
+         disabletime = changearrformat(disabletime);
+
+
     $(".form_datetime").datetimepicker({
       format: 'yyyy-mm-dd hh:ii:00',
       startDate:new Date(),
-      initialDate: new Date()
+      minuteStep : 60,   
+      initialDate: new Date(),
+      onRenderHour:function(date){
+        if(disabletime.indexOf(formatDate(date)+":"+pad(date.getUTCHours()))>-1)
+          {
+              return ['disabled'];
+          }
+    }  
   });
 
 

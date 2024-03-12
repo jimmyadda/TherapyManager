@@ -23,6 +23,7 @@ class Appointments(Resource):
         """Create the appoitment by assiciating patient and docter with appointment date"""
 
         appointment = request.get_json(force=True)
+        print(appointment)
         pat_id = appointment['pat_id']
         doc_id = appointment['doc_id']
         appointment_date = appointment['appointment_date']
@@ -48,6 +49,7 @@ class Appointment(Resource):
 
     def delete(self,id):
         """Delete teh appointment by its id"""
+        print("delete",id)
         conn.execute("DELETE FROM appointment WHERE app_id=?",(id,))
         conn.commit()
         return {'msg': 'sucessfully deleted'}
@@ -101,12 +103,13 @@ class RequestAppointment(Resource):
     def get(self,id):
         """retrive a singe appointment details by its id"""
 
-        appointment = conn.execute("SELECT * FROM pendingappointment WHERE where status = 0 and app_id=?",(id,)).fetchall()
+        appointment = conn.execute("SELECT * FROM pendingappointment WHERE status = 0 and app_id=?",(id,)).fetchall()
         return appointment
 
 
     def delete(self,id):
         """Delete teh appointment by its id"""
+        print("deleterequet",id)
         conn.execute("DELETE FROM pendingappointment WHERE app_id=?",(id,))
         conn.commit()
         return {'msg': 'sucessfully deleted'}

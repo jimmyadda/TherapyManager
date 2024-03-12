@@ -696,10 +696,11 @@ def get_portal():
         appointment_dates["nextappointment"] = nextappointment[0]["appointment_date"]
     apps = Appointments()
     appointments = apps.getappointmentsbypatient(id)
+    allappointments = apps.get()
 
-    print(patientmessages)
+    print("patientmessages",patientmessages)
     session['patientdata'] = patientdata
-    return render_template('portal.html',user=user,patientdata=patientdata,patientmessages=patientmessages,appointments=appointments,appointment_dates=appointment_dates,patfiles=patfiles,alert="")
+    return render_template('portal.html',user=user,patientdata=patientdata,patientmessages=patientmessages,allappointments=allappointments,appointments=appointments,appointment_dates=appointment_dates,patfiles=patfiles,alert="")
 
 @app.route("/checkdate",methods=["POST"])
 @flask_login.login_required
@@ -715,13 +716,33 @@ def chekappointmentdate():
        return "ERROR"             
     else:
         return "OK" 
-           
+
+@app.route("/postmsg",methods=["GET","POST"])
+def postmsg():
+    data=  dict(request.values)
+
+    app_id = data['app_id']
+    appointment = RequestAppointment()
+    patapp = appointment.get(app_id)
+
+    if patapp:
+        pat_id=patapp[0]['pat_id']
+        app_date = patapp[0]['appointment_date']
+        msg="בקשתך לטיפול בתאריך : {app_date}  לא אושרה יש לבקש תאריך נוסף, יום נפלא".format(app_date=app_date)
+        now = datetime.datetime.now().strftime("%Y-%m-%d")
+        sql = f"INSERT into messages (pat_id,create_date,message,app_id) VALUES  ('{pat_id}','{now}','{msg}','{app_id}');"
+        print("sql",sql)
+        ok = database_write(sql,data)
+        print('msg sent!',ok)
+        return redirect(f"/appointment")  
+    else:
+        return "No Patient appointment"    
 #endregion
 
 
 
 #dev 
-#app.run(debug=True)
+app.run(debug=True)
 
 #production  - remark above
 if __name__ == "__main__":

@@ -206,16 +206,17 @@
                           <!-- Wrapper for slides -->
                           <div class="carousel-inner" style="text-align: center;">
                            {% for msg in patientmessages %}
-                           {%if  msg['rec_id'] < 2%}  
+
+                           {% if loop.first %}
                            <div class="item active">
-                              <div class='patmsg'  id={{ msg['rec_id'] }}>{{ msg['message'] }}
+                              <div class='patmsg'  style="direction: rtl;" id={{ msg['rec_id'] }}>{{ msg['message'] }}
                                  <p>message date: {{ msg['create_date'] }}</p>
                               </div>
                               <div><a id="setmsgmark" href="/message?pat_id={{ msg['pat_id'] }}&mark=1&rec_id={{ msg['rec_id'] }}" >Mark as read</a> </div>
                             </div>
                            {%else%}
                            <div class="item ">
-                              <div class='patmsg'  id={{ msg['rec_id'] }}>{{ msg['message'] }}
+                              <div class='patmsg'  style="direction: rtl;" id={{ msg['rec_id'] }}>{{ msg['message'] }}
                                  <p>message date: {{ msg['create_date'] }}</p>
                               </div>
                               <div><a id="setmsgmark" href="/message?pat_id={{ msg['pat_id'] }}&mark=1&rec_id={{ msg['rec_id'] }}" >Mark as read</a> </div>
@@ -225,7 +226,7 @@
                                                      <!-- Indicators on carousel -->
                           <ol class="carousel-indicators">
                            {% for msg in patientmessages %} 
-                           {%if  msg['rec_id'] < 2%}  
+                           {% if loop.first %} 
                             <li data-target="#myCarousel" class="active" data-slide-to={{ msg['rec_id'] }} ></li>
                             {%else%}
                             <li data-target="#myCarousel" data-slide-to={{ msg['rec_id'] }}></li>
@@ -335,9 +336,9 @@
    <!-- =============== APP SCRIPTS ===============-->
    <script type="text/javascript" src="/static/main.js"></script>
    <script src="/static/app/js/app.js"></script>
-  
-   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="/static/js/disabledatetime.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://rawgit.com/AuspeXeu/bootstrap-datetimepicker/master/js/bootstrap-datetimepicker.js"></script>
     <script>
       $( document ).ready(function() {
          const queryString = window.location.search;
@@ -373,12 +374,21 @@
         s.type = "text/javascript";
         s.src = "/static/js/portal.js";
         $("head").append(s);
+
+        var unavailableHours = [];        
+        var appointment_data = JSON.parse('{{ allappointments | tojson | safe }}'); 
+
+        console.log(appointment_data);
+
+        appointment_data.forEach(element => {
+         unavailableHours.push(element.appointment_date)
+        });
+        console.log(unavailableHours);
+        $('#unavailableHours').val(unavailableHours);
+
    });
    
    </script>
-
-
-
-
-
+   <input id="unavailableHours" type="text" style="display: none;"/>
+   <input id="pendingunavailableHours" type="text" style="display: none;"/>
 </html>
