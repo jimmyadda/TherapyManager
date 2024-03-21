@@ -126,7 +126,7 @@ swal({
                     },
                     {
                         mRender: function (o) {
-                            return '<button id="delbtn" class="btn-xs btn btn-danger delete-btn" type="button">Delete</button>';
+                            return '<button key="deletebtn" id="delbtn" class="btn-xs btn btn-danger delete-btn translate EN" type="button">Delete</button>';
                         }
                     }
         ]
@@ -137,6 +137,17 @@ swal({
                 console.log(data.app_id)
                 deleteAppointment(data.app_id);
               });
+
+
+                     //call 
+       //language
+       console.log(my_lang,Translate_jsonData)
+       if(my_lang=="HE"){
+       translate_DOM_element('translate',Translate_jsonData,'EN',my_lang);     
+       }
+       else{
+       translate_DOM_element('translate',Translate_jsonData,'HE',my_lang);  
+       }  
 
         });
 
@@ -198,12 +209,12 @@ swal({
                     },
                     {
                         mRender: function (o) {
-                            return '<button  class="btn-xs btn btn-success edit-btn pendingedit" type="button">Approve</button>';
+                            return '<button key="approvebtn" class="btn-xs btn btn-success edit-btn pendingedit translate EN" type="button">Approve</button>';
                         }
                     },
                     {
                         mRender: function (o) {
-                            return '<button  class="btn-xs btn btn-danger pendingdel" type="button">Delete</button>';;
+                            return '<button  key="deletebtn" class="btn-xs btn btn-danger pendingdel translate EN" type="button">Delete</button>';;
                         }
                     }
             ]
@@ -234,6 +245,15 @@ swal({
 
               });
 
+       //call 
+       //language
+       console.log(my_lang,Translate_jsonData)
+       if(my_lang=="HE"){
+       translate_DOM_element('translate',Translate_jsonData,'EN',my_lang);     
+       }
+       else{
+       translate_DOM_element('translate',Translate_jsonData,'HE',my_lang);  
+       }  
 
         });
 
@@ -341,7 +361,7 @@ swal({
     })
 
 
-var doctorSelect=""
+ var doctorSelect=""
  function getDoctor() {
 
         var settings = {

@@ -297,7 +297,9 @@ textarea {
 .icon-print {
     background:url('/static/icons/print-outline.svg') no-repeat left center;
 }
-
+.icon-send {
+    background:url('/static/icons/send-outline.svg') no-repeat left center;
+}
 .myselectedfolder{
     background-color: rgb(92, 184, 92)
 }

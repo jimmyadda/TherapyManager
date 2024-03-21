@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+   
    <meta charset="utf-8">
    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
    <meta name="description" content="Bootstrap Admin App + jQuery">
@@ -26,7 +27,15 @@
       a:hover{
        text-decoration: none!important;
       }
+   .he {
+  direction: rtl;
+  text-align: right
+}
 
+.en {
+  direction: ltr;
+  text-align: left
+}
    </style>
 </head>
 
@@ -39,14 +48,20 @@
             <!-- START navbar header-->
             <div class="navbar-header">
                <a href="#/" class="navbar-brand">
-                  <div class="brand-logo">
+                  <div class="brand-logo translate">
                      Therapy Manager                                         
-                  </div>                  
+                  </div>  
+
+                                 
                   <div class="brand-logo-collapsed">
                      <img src="img/logo-single.png" alt="App Logo" class="img-responsive">
                   </div>
                </a>
-              
+               <select  style="left: 200px;position: absolute;top: 10px;" name="lang" id="lang">
+                  <option value="none">select Lang</option>
+                  <option value="EN">EN</option>
+                  <option value="HE">HE</option>
+                </select>
             </div>
             <!-- END navbar header-->
             <!-- START Nav wrapper-->
@@ -85,7 +100,7 @@
                <!-- START Language list-->
 
                <!-- END Language list    -->
-               <i class="fa fa-dashboard">Dashboard</i>
+               <i class="fa fa-dashboard translate en">Dashboard</i>
                <small data-localize="dashboard.WELCOME"></small>
             </div>
             <div class="row">
@@ -100,7 +115,7 @@
                         </div>
                         <div class="col-xs-8 pv-lg">
                            <div class="h1 m0 text-bold" id="patientcount"></div>
-                           <div class="text-uppercase">Patient</div>
+                           <div key="PatientWidget" class="text-uppercase translate en">Patient</div>
                         </div>
                      </div>
                   </div>
@@ -116,7 +131,7 @@
                         </div>
                         <div class="col-xs-8 pv-lg">
                            <div class="h1 m0 text-bold" id="doctorcount"></div>
-                           <div class="text-uppercase">Doctor</div>
+                           <div key="DoctortWidget" class="text-uppercase translate en">Doctor</div>
                         </div>
                      </div>
                   </div>
@@ -132,7 +147,7 @@
                         </div>
                         <div class="col-xs-8 pv-lg">
                            <div class="h1 m0 text-bold" id="appointmentcount"></div>
-                           <div class="text-uppercase">Appointment</div>
+                           <div key="AppointmentWidget" class="text-uppercase translate en">Appointment</div>
                         </div>
                      </div>
                   </div>
@@ -148,6 +163,8 @@
          <span>&copy; 2024 -Thrapy Manager</span>
       </footer>
    </div>
+
+
    <!-- =============== VENDOR SCRIPTS ===============-->
    <!-- MODERNIZR-->
    <script src="/static/vendor/modernizr/modernizr.custom.js"></script>
@@ -168,6 +185,26 @@
    <script src="/static/app/js/app.js"></script>
 <script src="/static/js/home.js"></script>
 <script type="text/javascript" src="/static/main.js"></script>
-</body>
+<script type="text/javascript" src="/static/js/Helpers.js"></script>
 
+</body>
+<script>
+   $( document ).ready(function() {
+
+      $("#lang").change(function() {
+            var optionValue = $(this).val();
+            var url = window.location.href.split("?")[0];
+            window.location = url + "?lang=" + optionValue; 
+            sessionStorage.setItem("lang",optionValue);
+         });
+
+     // sessionStorage.setItem("lang",'EN');
+     var Translate_jsonData = JSON.parse('{{ Translate_data | tojson | safe }}');     
+     translate_DOM_element('translate',Translate_jsonData,'EN',Lang);
+
+     
+
+
+});
+  </script>
 </html>

@@ -48,6 +48,9 @@ api.add_resource(Medicalnote, '/medicalnoteapi/<int:id>')
 api.add_resource(Common, '/common') 
 
 
+with open('Translate.json',encoding="utf8") as Translate_file:
+    Translate_data = json.load(Translate_file)
+
 #Settings
 with open('config.json') as config_file:
     config_data = json.load(config_file)
@@ -97,14 +100,12 @@ def load_user(userid):  #or client patid
         return None
     
 def database_check(data=None):
-    try:
-        
+    try:        
         connection = sqlite3.connect(database_filename)
-        with open('package\model.py') as f:
+        with open('package/model.py') as f:
             connection.executescript(f.read())
-
+        
         db = connection.cursor()
-
         connection.commit()
         db.close()
         connection.close()
@@ -153,7 +154,7 @@ def index_page():
         user = flask_login.current_user.get_dict()
         apps = Appointments()
         appointments= apps.get()   
-        return render_template('/index.html',user=user,appointments=appointments)
+        return render_template('/index.html',Translate_data=Translate_data,user=user,appointments=appointments)
     else:
         return redirect("/login")
 
@@ -443,20 +444,20 @@ def send_appointment(notification=''):
 def doctor_Page():
     id = request.args.get('id')
     user = flask_login.current_user.get_dict()
-    return render_template('doctor.html',user=user)
+    return render_template('doctor.html',Translate_data=Translate_data,user=user)
 
 @app.route("/patient", methods=['GET'])
 def patient_Page():
     id = request.args.get('id')
     user = flask_login.current_user.get_dict()
-    return render_template('patient.html',user=user)
+    return render_template('patient.html',Translate_data=Translate_data,user=user)
 
 @app.route("/appointment", methods=['GET'])
 @admin_only
 def appointment_Page():
         id = request.args.get('id')
         user = flask_login.current_user.get_dict()
-        return render_template('appointment.html',user=user)
+        return render_template('appointment.html',Translate_data=Translate_data,user=user)
 
 @app.route("/patientform", methods=['GET'])
 def patient_folder_Load():
@@ -494,7 +495,7 @@ def patient_folder_Load():
         else:
             pat_mednotes[i]["text"]=text
     session['patientdata'] = patientdata
-    return render_template('patientform.html',user=user,patientdata=patientdata,messages=messages,appointments=appointments,pat_mednotes=pat_mednotes,tasksfiles=tasksfiles, alert="")
+    return render_template('patientform.html',Translate_data=Translate_data,user=user,patientdata=patientdata,messages=messages,appointments=appointments,pat_mednotes=pat_mednotes,tasksfiles=tasksfiles, alert="")
 
 @app.route("/patientform", methods=["POST"])
 @flask_login.login_required
@@ -544,7 +545,7 @@ def patientnotes_page():
         pat_mednotes[0]["text"]=text_with_separators
     else:
         pat_mednotes[0]["text"]=text
-    return render_template('patientnotes.html',user=user,pat_mednotes=pat_mednotes)
+    return render_template('patientnotes.html',Translate_data=Translate_data,user=user,pat_mednotes=pat_mednotes)
 
 @app.route("/medicalnote" , methods=['GET'])
 @flask_login.login_required
@@ -570,7 +571,7 @@ def medicalnote_page():
         session['textineditor'] = texteditor['content']
     else:
         session['textineditor'] = " "
-    return render_template('medicalnote.html',user=user,appointments=appointments,pat_mednotes=pat_mednotes,texteditor=texteditor)
+    return render_template('medicalnote.html',Translate_data=Translate_data,user=user,appointments=appointments,pat_mednotes=pat_mednotes,texteditor=texteditor)
 
 @app.route("/medicalnote" , methods=['POST'])
 @flask_login.login_required
@@ -721,7 +722,7 @@ def chekappointmentdate():
 
 
 #dev 
-#app.run(debug=True)
+app.run(debug=True)
 
 #production  - remark above
 if __name__ == "__main__":

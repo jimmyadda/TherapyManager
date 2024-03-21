@@ -1,0 +1,51 @@
+{
+"EN": {
+            "AppointmentWidget": "Appointments",
+            "PatientWidget": "Patients",
+            "DoctortWidget": "Doctor"
+
+},
+"HE": 
+    {
+        "AppointmentWidget": "פגישות",
+        "PatientWidget": "מטופלים",
+        "DoctortWidget": "רופא",
+        "addpatbtn":"הוסף",
+        "tbltitle":"מטופלים",
+        "savebtn": "שמור",
+        "closebtn":"סגור",
+        "path4":"מטופל",
+        "address":"כתובת",
+        "email":"אימייל",
+        "phone":"טלפון",
+        "dob":"תאריך לידה",
+        "IDNum":"ת.זהות",
+        "lastname":"שם משפחה",
+        "firstname":"שם פרטי",
+        "doch4":"רופא",
+        "adddocbtn":"הוסף",
+        "deletebtn":"מחק",
+        "patrecbtn":"רשומות רפואיות",
+        "editbtn":"ערוך",
+        "appdate":"תאריך פגישה",
+        "patient":"מטופל",
+        "doctor":"רופא",
+        "apph4":"פגישות",
+        "calendarbtn":"תצוגת יומן",
+        "addappbtn":"הוסף",
+        "approvebtn":"אשר פגישה",
+        "patrecid":"רשומה",
+        "patfullname":"שם מלא",
+        "desc":"תיאור",
+        "patnotedate":"תאריך",
+        "addpatnotebtn":"הוסף רשומה",
+        "removefilebtn":"הסר קובץ",
+        "viewfilebtn":"הצג קובץ",
+        "uploadfilebtn":"הוסף קובץ",
+        "patfiles":"קבצים למטופל",
+        "sendmsg":"שלח הודעה",
+        "patid":"מספר",
+        "mednotetitle":"רשומות רפואיות"
+  }
+
+} 

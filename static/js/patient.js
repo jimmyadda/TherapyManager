@@ -133,18 +133,18 @@ swal({
                     },
                     {
                         mRender: function (o) {
-                            return '<button id="patedit"  class="btn-xs btn btn-info btn-edit edit-btn" type="button">Edit</button>';
+                            return '<button key="editbtn" id="patedit"  class="btn-xs btn btn-info btn-edit edit-btn translate EN" type="button">Edit</button>';
                         }
                     },
                     {
                         mRender: function (o) {
                             
-                            return '<button id="patrecords" class="folder-btn btn-xs btn btn-success" type="button">Patient Folder</button>';
+                            return '<button key="patrecbtn" id="patrecords" class="folder-btn btn-xs btn btn-success translate EN" type="button">Patient Folder</button>';
                         }
                     },
                     {
                         mRender: function (o) {
-                            return '<button  class="btn-xs btn btn-danger delete-btn" type="button">Delete</button>';
+                            return '<button  key="deletebtn" class="btn-xs btn btn-danger delete-btn translate EN" type="button">Delete</button>';
                         }
                     }
         ]
@@ -187,7 +187,16 @@ swal({
                 sessionStorage.setItem("pat_det", json_data);
                 window.open("/patientform?id="+data.pat_id);
             })
-                 
+       //call 
+       //language
+       console.log(my_lang,Translate_jsonData)
+       if(my_lang=="HE"){
+       translate_DOM_element('translate',Translate_jsonData,'EN',my_lang);     
+       }
+       else{
+       translate_DOM_element('translate',Translate_jsonData,'HE',my_lang);  
+       }   
+          
         });
 
 
@@ -264,18 +273,18 @@ function getPatientById(pat_id) {
                 },
                 {
                     mRender: function (o) {
-                        return '<button id="patedit" class="btn-xs btn btn-info btn-edit" type="button">Edit</button>';
+                        return '<button key="editbtn" id="patedit" class="btn-xs btn btn-info btn-edit translate EN" type="button">Edit</button>';
                     }
                 },
                 {
                     mRender: function (o) {
                         
-                        return '<button id="patrecords" class="btn-xs btn btn-success edit-btn" type="button">Patient Folder</button>';
+                        return '<button id="patrecords" class="btn-xs btn btn-success edit-btn translate EN" type="button">Patient Folder</button>';
                     }
                 },
                 {
                     mRender: function (o) {
-                        return '<button  class="btn-xs btn btn-danger delete-btn" type="button">Delete</button>';
+                        return '<button  key="deletebtn" class="btn-xs btn btn-danger delete-btn translate EN" type="button">Delete</button>';
                     }
                 }
     ]
@@ -284,7 +293,6 @@ function getPatientById(pat_id) {
             var data = table.row($(this).parents('tr')).data();
             console.log(data)
             deletePatient(data.pat_id)
-
         });
 
 
@@ -309,7 +317,8 @@ function getPatientById(pat_id) {
     
             })                    
         })
-             
+      
+
     });
 
 
@@ -328,6 +337,8 @@ $("#zehutinput").bind('blur', function(event)  {
         ValidatePatientIDno(document.getElementById("zehutinput"));
     }
 });
+
+
 
 
 })

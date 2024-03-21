@@ -24,7 +24,7 @@ $(document).ready(function () {
                $.notify("Doctor Added Successfully", {"status":"success"});
             table.destroy();
             $('#datatable4 tbody').empty(); // empty in case the columns change
-            getDoctor()
+            //getDoctor()
         });
 
     }
@@ -123,12 +123,12 @@ $(document).ready(function () {
                     },
                     {
                         mRender: function (o) {
-                            return '<button class="btn-xs btn btn-info btn-edit" type="button">Edit</button>';
+                            return '<button key="editbtn" class="btn-xs btn btn-info btn-edit translate EN" type="button">Edit</button>';
                         }
                     },
                     {
                         mRender: function (o) {
-                            return '<button class="btn-xs btn btn-danger delete-btn" type="button">Delete</button>';
+                            return '<button key="deletebtn" class="btn-xs btn btn-danger delete-btn translate EN" type="button">Delete</button>';
                         }
                     }
         ]
@@ -161,6 +161,17 @@ $(document).ready(function () {
 
             });
 
+       //call 
+       //language
+       console.log(my_lang,Translate_jsonData)
+       if(my_lang=="HE"){
+       translate_DOM_element('translate',Translate_jsonData,'EN',my_lang);     
+       }
+       else{
+       translate_DOM_element('translate',Translate_jsonData,'HE',my_lang);  
+       }   
+
+
         });
 
 
@@ -172,8 +183,6 @@ $(document).ready(function () {
     $("#addpatient").click(function () {
 
         $('#myModal').modal().one('shown.bs.modal', function (e) {
-
-
             $("#savethepatient").off("click").on("click", function (e) {
                 console.log("inn")
                 var instance = $('#detailform').parsley();
