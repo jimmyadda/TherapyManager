@@ -604,12 +604,11 @@ def updatemedicalnote():
         
 @app.route("/message" , methods=['GET'])
 @flask_login.login_required
-@admin_only
 def message_page():
     user = flask_login.current_user.get_dict()
     data = request.values
-    pat_id = data['pat_id']
-    recid = request.values['rec_id'] 
+    print(data)
+    pat_id = data['patid']
     app_id = 0
     if 'app_id' in request.values:
         app_id =  data['app_id']
@@ -698,8 +697,6 @@ def get_portal():
     apps = Appointments()
     appointments = apps.getappointmentsbypatient(id)
     allappointments = apps.get()
-
-    print("patientmessages",patientmessages)
     session['patientdata'] = patientdata
     return render_template('portal.html',user=user,patientdata=patientdata,patientmessages=patientmessages,allappointments=allappointments,appointments=appointments,appointment_dates=appointment_dates,patfiles=patfiles,alert="")
 
@@ -721,11 +718,9 @@ def chekappointmentdate():
 @app.route("/postmsg",methods=["GET","POST"])
 def postmsg():
     data=  dict(request.values)
-
     app_id = data['app_id']
     appointment = RequestAppointment()
     patapp = appointment.get(app_id)
-
     if patapp:
         pat_id=patapp[0]['pat_id']
         app_date = patapp[0]['appointment_date']

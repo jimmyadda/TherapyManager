@@ -233,7 +233,7 @@
           <section>
             <!-- Page content-->
             <div class="content-wrapper" style="width: 85%;">
-               <div key="mednotetitle" class="content-heading translate EN">
+               <div key="mednotetitle" class="content-heading">
                   <!-- START Language list-->
                   <!-- END Language list    -->
                  Medical Notes
@@ -248,7 +248,7 @@
                      <div class="col-lg-12">
                         <div class="panel panel-default"  style="overflow: auto; padding: 15px;">
                            <div class="table-responsive">
-                              <table id="datatable4" class="table table-striped">
+                              <table id="patrecdatatable" class="table table-striped">
                                  <thead>
                                     <tr>
                                        <th key="patrecid" class="translate EN" style="width:10%">Rec</th>
@@ -267,8 +267,8 @@
                                      <td>{{ note['pat_first_name'] }} {{ note['pat_last_name'] }}</td>
                                      <td>{{ note['text'] }}</td>                
                                      <td>{{ note['create_date'] }}</td>  
-                                     <td><button key="editbtn" class="btn-xs btn btn-info btn-editrecord translate EN" type="button">Edit</button> &nbsp;
-                                     <button  key="deletebtn" class="btn-xs btn btn-danger delete-btnrecord translate EN" type="button">Delete</button></td>
+                                      <td><button key="editbtn" class="btn-xs btn btn-info btn-editrecord translate EN" type="button">Edit</button> &nbsp;
+                                     <button  key="deletebtn" class="btn-xs btn btn-danger delete-btnrecord translate EN" type="button">Delete</button></td> 
                                      <td name="id" class="noteid" style="display: none;">{{ note['rec_id'] }}</td>
                                      <td name="id" class="patientid" style="display: none;">{{ note['pat_id'] }}</td>
                                    </tr>
@@ -527,9 +527,8 @@
                  var data = table.row($(this).parents('tr')).data();
                  deleteMedicalNote(data[0])
              });
-             alert("Bla")
  
-             $('.btn-edit').off("click").on("click", function (e) {
+             $('.btn-editrecord').off("click").on("click", function (e) {
                 var data = table.row($(this).parents('tr')).data();  
                 var thistr = e.target.parentElement.parentNode
                 var noteid = $(e.target).closest('tr').find(".noteid").html();
@@ -651,7 +650,7 @@
 
             });
             
-               function getMedicalNote() {
+    function getMedicalNote() {
                 console.log("test");
                             var settings = {
                                 "async": true,
@@ -699,6 +698,8 @@
                                     deleteMedicalNote(data.doc_id)
 
                                 });
+
+
                                 $('.btn-editrecord').one("click", function (e) {
                                     var data = table.row($(this).parents('tr')).data();
                                     $('#myModal').modal().one('shown.bs.modal', function (e) {
@@ -742,7 +743,7 @@
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const patienid = urlParams.get('id')
-         window.open('/message?id='+patienid); 
+         window.open('/message?patid='+patienid); 
          return false;
      }
  </script>
