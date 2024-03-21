@@ -36,7 +36,12 @@ $(document).ready(function () {
             });
             getAppointment()
         });
-        refreshParent();
+        if(data.app_id){
+            //was pending
+            console.log("end of add ",data.app_id);
+            deleteapprovedAppointment(data.app_id);
+            
+        }
     }
 
     function refreshParent() {
@@ -69,7 +74,7 @@ swal({
    swal("Deleted!", "Appointment has been deleted.", "success");
             table.destroy();
             $('#datatable4 tbody').empty(); // empty in case the columns change
-            getAppointment()
+            getAppointment();
         });
 
 
@@ -230,18 +235,23 @@ swal({
               $(".pendingedit").click(function() { // using the unique ID of the button
                 var table = $('#pendingtbl').DataTable();
                 var data = table.row($(this).parents('tr')).data();  
-                var dateavailable = false;
-                var datetocheck = data.appointment_date
-                if(disabletimepending.indexOf(datetocheck) > -1)
-                {
-                    swal("Oops...", "This date is unavailable!", "error");
+                if(data){
+                    console.log(data.app_id);
+                    var dateavailable = false;
+                    var datetocheck = data.appointment_date
+                    if(disabletimepending.indexOf(datetocheck) > -1)
+                    {
+                        swal("Oops...", "This date is unavailable!", "error");
+                    }
+                    else
+                    {
+                        addAppointment(data);
+                        //deleteapprovedAppointment(data.app_id);
+                    }
                 }
-                else
-                {
-                    addAppointment(data);
-                    deleteapprovedAppointment(data.app_id);
+                else{
+                    console.log("no Row Data")
                 }
-
 
               });
 
@@ -273,7 +283,6 @@ swal({
                 "postman-token": "28ea8360-5af0-1d11-e595-485a109760f2"
             }
         }
-
 swal({
     title: "Are you sure?",
     text: "You will not be able to recover this data",
@@ -283,14 +292,28 @@ swal({
     confirmButtonText: "Yes, delete it!",
     closeOnConfirm: false
 }, function() {
+                                 //send mmessage to patient portal
+                                 let f = new FormData();
+                                 f.append("app_id",id)
+                     
+                                 fetch("/postmsg",{
+                                 "method": "POST",
+                                 "body":f,       
+                                 }).then(response => response.text()).then(data => { 
+                                    console.log(data);          
+                                 });
+
+                                 
  $.ajax(settings).done(function (response) {
    swal("Deleted!", "Appointment Request has been deleted.", "success");
+
+
             table.destroy();
             $('#pendingtbl tbody').empty(); // empty in case the columns change
-            getPendingAppointment()
+            location.reload();
+            getPendingAppointment();
+
         });
-
-
 });
 
     }
@@ -307,10 +330,11 @@ swal({
                 "postman-token": "28ea8360-5af0-1d11-e595-485a109760f2"
             }
         }
-    $.ajax(settings).done(function (response) {                
-                $('#pendingtbl tbody').empty(); // empty in case the columns change
-                getPendingAppointment()
-            });
+        $.ajax(settings).done(function (response) {                
+                    $('#pendingtbl tbody').empty(); // empty in case the columns change
+                    location.reload();
+                    getPendingAppointment()
+                });
     }
 
 
