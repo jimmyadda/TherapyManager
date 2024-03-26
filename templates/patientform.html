@@ -265,7 +265,7 @@
                                    <tr>
                                      <td>{{ note['rec_id'] }}</td>
                                      <td>{{ note['pat_first_name'] }} {{ note['pat_last_name'] }}</td>
-                                     <td>{{ note['text'] }}</td>                
+                                     <td>{{ note['text'][:50] }}</td>                
                                      <td>{{ note['create_date'] }}</td>  
                                       <td><button key="editbtn" class="btn-xs btn btn-info btn-editrecord translate EN" type="button">Edit</button> &nbsp;
                                      <button  key="deletebtn" class="btn-xs btn btn-danger delete-btnrecord translate EN" type="button">Delete</button></td> 
@@ -395,12 +395,14 @@
                 populate('#maintbl', newdata[0]) 
                     
             $("#addpatient").click(function () {
+                console.log("patientform")
                 $('#myModal').modal().one('shown.bs.modal', function (e) {
                     $("#savethepatient").off("click").on("click", function (e) {
                         var instance = $('#detailform').parsley();
                         instance.validate()
                         if (instance.isValid()) {
                             jsondata = $('#detailform').serializeJSON();
+                            console.log(jsondata)
                             addmedicalnote(jsondata)
                         }
 
@@ -726,6 +728,7 @@
 
 
                     }
+
 
 
        //call 

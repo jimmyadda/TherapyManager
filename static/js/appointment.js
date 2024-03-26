@@ -366,6 +366,7 @@ swal({
     });
 
             $("#savethepatient").off("click").on("click", function(e) {
+                console.log("appointmentjs")
             var instance = $('#detailform').parsley();
             instance.validate()
              if(instance.isValid()){
