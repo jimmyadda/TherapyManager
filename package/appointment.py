@@ -28,9 +28,6 @@ class Appointments(Resource):
         doc_id = appointment['doc_id']
         appointment_date = appointment['appointment_date']
         
-
-
-
         appointment['app_id'] = conn.execute('''INSERT INTO appointment(pat_id,doc_id,appointment_date)
             VALUES(?,?,?)''', (pat_id, doc_id,appointment_date)).lastrowid
         conn.commit()

@@ -708,16 +708,17 @@
                                         for (var key in data) {
                                             $("[name=" + key + "]").val(data[key])
                                         }
-                                        $("#savethepatient").off("click").on("click", function (e) {
-                                            var instance = $('#detailform').parsley();
-                                            instance.validate()
-                                            console.log(instance.isValid())
-                                            if (instance.isValid()) {
-                                                jsondata = $('#detailform').serializeJSON();
-                                                updateMedicalNote(jsondata, data.doc_id)
-                                            }
+                                        // $("#savethepatient").off("click").on("click", function (e) {
+                                        //     debugger
+                                        //     var instance = $('#detailform').parsley();
+                                        //     instance.validate()
+                                        //     console.log(instance)
+                                        //     if (instance.isValid()) {
+                                        //         jsondata = $('#detailform').serializeJSON();
+                                        //         updateMedicalNote(jsondata, data.doc_id)
+                                        //     }
 
-                                        })
+                                        // })
                                     })
 
 

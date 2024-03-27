@@ -15,7 +15,8 @@ $(document).ready(function () {
     function addAppointment(data) {
         var table
 
-       console.log(data);
+      alert(data);
+      debugger;
         var settings = {
             "async": true,
             "crossDomain": true,
@@ -29,7 +30,9 @@ $(document).ready(function () {
             "processData": false,
             "data": JSON.stringify(data)
         }
-        $.ajax(settings).done(function (response) {
+        $.ajax(settings).
+        done(function (response) {
+          console.log(response);
          $.notify("Appointment Added Successfully", {"status":"success"});
             $('.modal.in').modal('hide')
             //table.destroy();
@@ -155,6 +158,7 @@ swal({
     }
 
     $("#addpatient").click(function () {
+       
 
         $('#myModal').modal().one('shown.bs.modal', function (e) {
 
@@ -184,10 +188,13 @@ swal({
     });
 
             $("#savethepatient").off("click").on("click", function(e) {
+
             var instance = $('#detailform').parsley();
             instance.validate()
+             console.log(instance, instance.validate())
              if(instance.isValid()){
                 jsondata = $('#detailform').serializeJSON();
+                
                 let pat_id = jsondata.pat_id;
                 addAppointment(jsondata);
                 //send mail to patient
